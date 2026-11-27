@@ -4,254 +4,391 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: 會議室工作台 — 上方會議資訊列，左側逐字稿主欄，右側小議面板；會後切換為檢核寫回畫面 */
+/* Layout: 桌面程式式三段 — 左側欄（錄音、搜尋、依類型分資料夾的會議清單）＋主區（標題列、分頁內容）＋底部錄音列 */
 :root {
-  --bg: #f3f5f4;
+  --bg: #fbfbfa;
+  --side: #f2f3f1;
   --surface: #ffffff;
-  --surface-2: #e9eeec;
-  --ink: #17211f;
-  --muted: #5b6965;
-  --line: #d3dcd9;
-  --accent: #0d6b57;
+  --surface-2: #f2f4f3;
+  --ink: #1c2120;
+  --muted: #727b78;
+  --line: #e3e6e4;
+  --accent: #127a63;
   --accent-ink: #ffffff;
-  --accent-soft: #d6ece6;
-  --wake: #b5650d;
-  --wake-soft: #fbe8cf;
-  --danger: #b3261e;
-  --danger-soft: #f9dedc;
+  --accent-soft: #e3f1ec;
+  --wake: #a85d0c;
+  --wake-soft: #fcf0df;
+  --danger: #c0352b;
+  --danger-soft: #fbe7e5;
   --ok: #1d7a3e;
+  --c1: #3b82c4; --c2: #b0508f; --c3: #4f9a3c; --c4: #c0792a; --c5: #7a5cc4; --c6: #2a9aa0; --c7: #c4485a; --c8: #7d8a86;
   --font-body: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
-  --r: 8px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #121816; --surface: #1a2220; --surface-2: #232d2a; --ink: #e5ece9; --muted: #9aaaa5;
-    --line: #33403c; --accent: #4fc2a3; --accent-ink: #08201a; --accent-soft: #1d3a33;
-    --wake: #f0a85a; --wake-soft: #3b2a14; --danger: #f2948c; --danger-soft: #3d1f1c; --ok: #6fd39a;
+    --bg: #1d1e21; --side: #17181a; --surface: #232427; --surface-2: #2a2c30; --ink: #e8e9ea; --muted: #9a9ea3;
+    --line: #34363b; --accent: #3fbf9c; --accent-ink: #0b211b; --accent-soft: #1f3a33;
+    --wake: #e7a55a; --wake-soft: #3a2b16; --danger: #ef8a81; --danger-soft: #3d201d; --ok: #6fd39a;
+    --c1: #6aa9e8; --c2: #d77fb9; --c3: #82c46c; --c4: #e3a35a; --c5: #a68ae6; --c6: #5cc4c9; --c7: #e47a8a; --c8: #9aa5a1;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #121816; --surface: #1a2220; --surface-2: #232d2a; --ink: #e5ece9; --muted: #9aaaa5;
-  --line: #33403c; --accent: #4fc2a3; --accent-ink: #08201a; --accent-soft: #1d3a33;
-  --wake: #f0a85a; --wake-soft: #3b2a14; --danger: #f2948c; --danger-soft: #3d1f1c; --ok: #6fd39a;
+  --bg: #1d1e21; --side: #17181a; --surface: #232427; --surface-2: #2a2c30; --ink: #e8e9ea; --muted: #9a9ea3;
+  --line: #34363b; --accent: #3fbf9c; --accent-ink: #0b211b; --accent-soft: #1f3a33;
+  --wake: #e7a55a; --wake-soft: #3a2b16; --danger: #ef8a81; --danger-soft: #3d201d; --ok: #6fd39a;
+  --c1: #6aa9e8; --c2: #d77fb9; --c3: #82c46c; --c4: #e3a35a; --c5: #a68ae6; --c6: #5cc4c9; --c7: #e47a8a; --c8: #9aa5a1;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
-body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
-.wrap { max-width: 1280px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 40px; display: grid; gap: 16px; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.6; }
 h1, h2, h3 { margin: 0; text-wrap: balance; line-height: 1.3; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); }
-.small { font-size: 13px; }
+.small { font-size: 12.5px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.grow { flex: 1; }
+.inp, .field input, .field select, textarea { width: 100%; min-width: 0; padding: 7px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 7px; padding: 5px 12px; font-size: 13.5px; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 500; }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--accent); padding-inline: 8px; }
+.btn.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.iconbtn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; width: 34px; height: 34px; display: grid; place-items: center; }
+.iconbtn svg { width: 17px; height: 17px; }
 
-/* header */
-.top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
-.brand { display: flex; align-items: center; gap: 10px; }
-.mark { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; font-size: 16px; }
-.brand h1 { font-size: 20px; }
-.brand .sub { font-size: 12px; color: var(--muted); letter-spacing: .04em; }
-.steps { margin-left: auto; display: flex; gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 999px; }
-.steps button { border: 0; background: transparent; padding: 6px 14px; border-radius: 999px; font-size: 14px; color: var(--muted); }
-.steps button[aria-pressed="true"] { background: var(--surface); color: var(--ink); font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+/* 外框 */
+.shell { height: 100%; display: grid; grid-template-columns: 260px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+@media (max-width: 860px) { .shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; height: auto; min-height: 100%; } }
 
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
-.meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; padding: 14px 16px; }
+/* 側欄 */
+.side { grid-row: 1 / 3; background: var(--side); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; padding: 12px 10px; gap: 10px; }
+@media (max-width: 860px) { .side { grid-row: auto; border-right: 0; border-bottom: 1px solid var(--line); max-height: 46vh; } }
+.side .top { display: flex; gap: 6px; }
+.side .top .btn { flex: 1; justify-content: center; padding-block: 7px; }
+.search { position: relative; }
+.search input { padding-left: 30px; background: var(--surface); }
+.search svg { position: absolute; left: 9px; top: 50%; translate: 0 -50%; width: 15px; height: 15px; color: var(--muted); }
+.nav { flex: 1; overflow-y: auto; display: grid; align-content: start; gap: 2px; }
+.nav .grp { display: flex; align-items: center; gap: 6px; padding: 10px 8px 4px; font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+.nav .grp svg { width: 15px; height: 15px; }
+.nav .it { border: 0; background: transparent; text-align: left; border-radius: 7px; padding: 6px 8px 6px 28px; display: grid; gap: 0; width: 100%; }
+.nav .it:hover { background: var(--surface-2); }
+.nav .it[aria-current="true"] { background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.nav .it .nm { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav .it .st { font-size: 11.5px; color: var(--muted); }
+.nav .none { padding: 4px 8px 4px 28px; font-size: 12px; color: var(--muted); }
+.side .foot { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); padding: 0 6px; }
+
+/* 主區 */
+.main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.head { padding: 18px 28px 0; display: grid; gap: 8px; }
+.titlerow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.title { font-size: 24px; font-weight: 700; border: 1px solid transparent; background: transparent; border-radius: 7px; padding: 0 6px; margin-left: -7px; min-width: 0; flex: 1 1 280px; }
+.title:hover, .title:focus { border-color: var(--line); background: var(--surface); }
+.metarow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; color: var(--muted); font-size: 13px; }
+.metarow .mi { display: inline-flex; align-items: center; gap: 5px; }
+.metarow svg { width: 15px; height: 15px; }
+.plain { border: 1px solid transparent; background: transparent; color: var(--muted); border-radius: 6px; padding: 1px 4px; font-size: 13px; cursor: pointer; }
+.plain:hover, .plain:focus { border-color: var(--line); background: var(--surface); color: var(--ink); }
+.nav .grp { cursor: default; }
+.nav .grp .gname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav .grp .gact { visibility: hidden; border: 0; background: transparent; color: var(--muted); padding: 0 4px; border-radius: 5px; }
+.nav .grp:hover .gact, .nav .grp:focus-within .gact { visibility: visible; }
+.nav .grp .gact:hover { background: var(--surface); color: var(--ink); }
+.nav .grp.drop, .nav .it.drop { background: var(--accent-soft); border-radius: 7px; }
+.nav .grp input { flex: 1; padding: 2px 6px; font-size: 12.5px; }
+.nav .sechd { display: flex; align-items: center; justify-content: space-between; padding: 10px 8px 2px; font-size: 11.5px; color: var(--muted); letter-spacing: .06em; }
+.nav .sechd button { border: 0; background: transparent; color: var(--muted); font-size: 16px; line-height: 1; padding: 0 4px; border-radius: 5px; }
+.nav .sechd button:hover { background: var(--surface); color: var(--ink); }
+.nav .it { cursor: pointer; }
+.menu { position: relative; }
+.menu > summary { list-style: none; }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu .pop { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; background: var(--surface); border: 1px solid var(--line); border-radius: 9px; padding: 6px; display: grid; gap: 2px; min-width: 190px; box-shadow: 0 10px 30px rgba(0,0,0,.14); }
+.menu .pop .btn { justify-content: flex-start; border-color: transparent; background: transparent; }
+.menu .pop .btn:hover { background: var(--surface-2); }
+
+/* 發言人（彩色編號） */
+.speakers { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.speakers .lbl { font-size: 12px; color: var(--muted); }
+.spk { border: 1px solid transparent; background: transparent; border-radius: 999px; padding: 1px 9px 1px 3px; font-size: 13px; display: inline-flex; gap: 6px; align-items: center; color: var(--c, var(--muted)); }
+.spk .k { width: 19px; height: 19px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-family: var(--font-mono); border: 1.5px solid currentColor; }
+.spk[aria-pressed="true"] { background: color-mix(in srgb, var(--c, var(--accent)) 16%, transparent); border-color: color-mix(in srgb, var(--c, var(--accent)) 45%, transparent); font-weight: 500; }
+.speakers > .small { display: none; }
+
+.meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
 .field { display: grid; gap: 4px; min-width: 0; }
-.field label { font-size: 12px; color: var(--muted); letter-spacing: .04em; }
-.field input, .field select, textarea, .inp { width: 100%; min-width: 0; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); }
-.field.wide { grid-column: span 2; }
-@media (max-width: 560px) { .field.wide { grid-column: auto; } }
-
+.field label { font-size: 12px; color: var(--muted); }
+.field.full { grid-column: 1 / -1; }
 .people { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 3px 12px; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
-.chip[aria-pressed="false"] { opacity: .5; text-decoration: line-through; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 2px 11px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+.chip[aria-pressed="false"] { opacity: .45; text-decoration: line-through; }
 .chip .k { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.attrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.attrow > svg { width: 15px; height: 15px; }
+.chip .x { border: 0; background: transparent; color: var(--muted); padding: 0 0 0 2px; font-size: 14px; line-height: 1; cursor: pointer; }
+.chip .x:hover { color: var(--ink); }
+.chip.add { border-style: dashed; color: var(--muted); cursor: pointer; }
+.chip.add:hover, .chip.sug:hover { color: var(--ink); border-color: var(--ink); }
+.chip.sug { cursor: pointer; }
+.picker { display: grid; gap: 8px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.picker .lbl { font-size: 12px; color: var(--muted); }
+.importbig { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 
-/* meeting view */
-.live { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
-@media (max-width: 900px) { .live { grid-template-columns: minmax(0, 1fr); } }
+.tabs { display: flex; gap: 22px; padding: 6px 28px 0; border-bottom: 1px solid var(--line); }
+.tabs button { border: 0; background: transparent; padding: 8px 2px; font-size: 14.5px; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 500; }
+.tabs .tabbadge { font-size: 11px; color: var(--wake); margin-left: 4px; }
+.pane { flex: 1; overflow-y: auto; min-height: 0; }
+.pane .bd { padding: 16px 28px; display: grid; gap: 12px; max-width: 980px; }
 
-.recbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-.rec { border: 0; border-radius: 999px; padding: 9px 18px; font-weight: 700; background: var(--accent); color: var(--accent-ink); display: inline-flex; align-items: center; gap: 8px; }
-.rec .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
-.rec.on { background: var(--danger); color: #fff; }
-.rec.on .dot { animation: pulse 1.2s ease-in-out infinite; }
-.rec:disabled { opacity: .5; cursor: not-allowed; }
-@keyframes pulse { 50% { opacity: .25; } }
-@media (prefers-reduced-motion: reduce) { .rec.on .dot { animation: none; } }
-.timer { font-size: 18px; }
-.recstate { font-size: 13px; color: var(--muted); }
+/* 紀錄 */
+.viewsw { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.viewsw button { border: 0; background: var(--surface); padding: 4px 12px; font-size: 13px; color: var(--muted); }
+.viewsw button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+.gen { display: grid; gap: 10px; padding: 56px 24px; place-items: center; text-align: center; color: var(--muted); }
+.gen h2 { color: var(--ink); font-size: 17px; }
+.sec { padding: 12px 28px; display: grid; gap: 8px; max-width: 980px; }
+.sec h2 { font-size: 14px; color: var(--muted); font-weight: 500; letter-spacing: .03em; }
+.sec textarea { border: 1px solid transparent; background: transparent; padding: 4px 6px; resize: vertical; line-height: 1.8; font-size: 14.5px; }
+.sec textarea:hover, .sec textarea:focus { border-color: var(--line); background: var(--surface); }
+#rvMd { min-height: 360px; }
+textarea.short { min-height: 80px; }
+.confirmbar { margin: 14px 28px 0; max-width: 924px; border: 1px solid color-mix(in srgb, var(--wake) 55%, transparent); background: var(--wake-soft); border-radius: 9px; }
+.confirmbar summary { cursor: pointer; padding: 8px 12px; font-size: 13.5px; font-weight: 500; color: var(--wake); }
+.confirmbar .qs { display: grid; gap: 8px; padding: 0 12px 12px; }
+.confirmbar .q { display: grid; gap: 4px; font-size: 13.5px; }
+.tblwrap { overflow-x: auto; }
+table.todos { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 520px; }
+table.todos th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 6px; border-bottom: 1px solid var(--line); }
+table.todos td { padding: 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.todos input[type=text], table.todos select, table.todos input[type=date] { width: 100%; padding: 4px 6px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); }
+table.todos .quote { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.missing { border-color: var(--wake) !important; }
 
-.speakers { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
-.speakers .lbl { font-size: 12px; color: var(--muted); margin-right: 4px; }
-.spk { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 4px 10px; font-size: 14px; display: inline-flex; gap: 6px; align-items: center; }
-.spk[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-.spk .k { font-family: var(--font-mono); font-size: 11px; opacity: .7; }
+/* 心智圖 */
+.mm { position: relative; padding: 8px 12px 24px; }
+.mmzoom { position: sticky; top: 8px; display: flex; justify-content: flex-end; gap: 6px; align-items: center; z-index: 2; padding-right: 16px; color: var(--muted); font-size: 12px; }
+.mmwrap { overflow: auto; }
+.mm svg text { font-family: var(--font-body); }
 
-.transcript { height: min(62vh, 640px); overflow-y: auto; padding: 8px 0; }
-.line { display: grid; grid-template-columns: 64px 92px minmax(0, 1fr); gap: 8px; padding: 6px 16px; align-items: start; }
+/* 逐字稿 */
+.trbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 28px; border-bottom: 1px solid var(--line); }
+.src { border-bottom: 1px solid var(--line); background: var(--surface-2); padding: 12px 28px; display: grid; gap: 10px; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 2px; background: var(--surface); border: 1px solid var(--line); padding: 3px; border-radius: 8px; width: fit-content; }
+.seg button { border: 0; background: transparent; padding: 3px 11px; border-radius: 6px; font-size: 13px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+.srcpane { display: grid; gap: 8px; }
+.online { display: grid; gap: 8px; padding: 10px 28px; border-bottom: 1px solid var(--line); background: var(--accent-soft); }
+.transcript { padding: 8px 0; }
+.line { display: grid; grid-template-columns: 58px 160px minmax(0, 1fr); gap: 10px; padding: 5px 28px; align-items: start; }
 .line:hover { background: var(--surface-2); }
-.line .t { font-size: 12px; color: var(--muted); padding-top: 3px; }
-.line select { border: 0; background: transparent; font-weight: 700; font-size: 14px; padding: 0; color: var(--accent); max-width: 100%; }
-.line .tx { min-width: 0; overflow-wrap: anywhere; }
+.line .t { font-size: 12px; color: var(--muted); padding-top: 3px; font-family: var(--font-mono); }
+.line select { border: 0; background: transparent; font-weight: 500; font-size: 13px; padding: 0; color: var(--accent); max-width: 100%; }
+.line .tx { min-width: 0; overflow-wrap: anywhere; font-size: 14.5px; }
 .line.wake { background: var(--wake-soft); }
 .line.wake .tx::before { content: "小議 "; font-size: 11px; font-weight: 700; color: var(--wake); border: 1px solid var(--wake); border-radius: 4px; padding: 0 4px; margin-right: 6px; }
 .partial { color: var(--muted); font-style: italic; }
 @media (max-width: 560px) { .line { grid-template-columns: 52px minmax(0, 1fr); } .line .tx { grid-column: 1 / -1; } }
-.empty { padding: 32px 24px; color: var(--muted); display: grid; gap: 8px; max-width: 60ch; }
-.empty strong { color: var(--ink); }
-
-.manual { display: flex; gap: 8px; padding: 10px 16px; border-top: 1px solid var(--line); }
+.empty { padding: 56px 24px; color: var(--muted); display: grid; gap: 8px; max-width: 46ch; margin: 0 auto; text-align: center; }
+.empty strong { color: var(--ink); font-size: 16px; }
+.manual { display: flex; gap: 8px; padding: 10px 28px 4px; border-top: 1px solid var(--line); position: sticky; bottom: 0; background: var(--bg); }
 .manual input { flex: 1; }
-.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 7px 14px; font-size: 14px; white-space: nowrap; }
-.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 500; }
-.btn.ghost { border-color: transparent; background: transparent; color: var(--accent); padding-inline: 6px; }
-.btn:disabled { opacity: .5; cursor: not-allowed; }
+.autoc { display: flex; gap: 6px; align-items: center; padding: 0 28px 10px; background: var(--bg); position: sticky; bottom: 0; }
+.listening { margin: 8px 28px 0; border: 1px dashed var(--wake); background: var(--wake-soft); border-radius: 7px; padding: 6px 10px; }
+.notice { padding: 9px 13px; border-radius: 8px; font-size: 13px; background: var(--surface-2); }
+.notice.warn { background: var(--wake-soft); }
+.notice.err { background: var(--danger-soft); color: var(--danger); }
+.s-ok { color: var(--ok); } .s-err { color: var(--danger); } .s-run { color: var(--wake); }
 
-/* side */
-.side { display: grid; gap: 16px; }
-.side .hd { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-.side h2 { font-size: 15px; }
-.side .bd { padding: 12px 16px; display: grid; gap: 12px; }
-.wakehint { font-size: 13px; color: var(--muted); }
-.wakehint b { color: var(--wake); }
-.listening { border: 1px dashed var(--wake); background: var(--wake-soft); border-radius: 6px; padding: 8px 10px; font-size: 14px; }
+/* 問小議／追蹤 */
+.ask { display: flex; gap: 6px; }
+.ask input { flex: 1; }
 .qa { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 6px; }
 .qa:first-child { border-top: 0; padding-top: 0; }
 .qa .q { font-weight: 700; }
-.qa .a { font-size: 14px; overflow-wrap: anywhere; }
+.qa .a { overflow-wrap: anywhere; }
 .qa .a ul { margin: 4px 0; padding-left: 20px; }
 .qa .a a { color: var(--accent); }
 .qa .st { font-size: 12px; color: var(--muted); }
 .qa .err { color: var(--danger); font-size: 13px; }
-.ask { display: flex; gap: 6px; }
-.ask input { flex: 1; }
-.prevlist { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
+.prevpick { display: grid; gap: 8px; max-width: 560px; }
+.prevlist { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
 .prevlist li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: start; }
 .prevlist .who { font-weight: 700; color: var(--accent); }
+.prevlist .meta2 { font-size: 12px; color: var(--muted); }
 
-.notice { padding: 10px 14px; border-radius: 6px; font-size: 14px; background: var(--surface-2); }
-.notice.warn { background: var(--wake-soft); }
-.notice.err { background: var(--danger-soft); color: var(--danger); }
+/* 底部錄音列 */
+.dock { grid-column: 2; border-top: 1px solid var(--line); background: var(--surface); display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 20px; }
+@media (max-width: 860px) { .dock { grid-column: 1; position: sticky; bottom: 0; } }
+.rec { border: 0; border-radius: 999px; padding: 8px 18px; font-weight: 700; background: var(--accent); color: var(--accent-ink); display: inline-flex; align-items: center; gap: 8px; }
+.rec .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+.rec.on { background: var(--danger); color: #fff; }
+.rec.on .dot { animation: pulse 1.2s ease-in-out infinite; }
+.rec:disabled { opacity: .45; cursor: not-allowed; }
+@keyframes pulse { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .rec.on .dot { animation: none; } }
+.timer { font-size: 16px; }
+.recstate { font-size: 12px; color: var(--muted); }
+.lvl { flex: 1; min-width: 80px; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.lvl i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
 
-details.imp summary { cursor: pointer; font-size: 13px; color: var(--muted); padding: 10px 16px; }
-details.imp .bd { padding: 0 16px 12px; display: grid; gap: 8px; }
-
-/* review view */
-.review { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
-@media (max-width: 900px) { .review { grid-template-columns: minmax(0, 1fr); } }
-.review .sec { padding: 14px 16px; display: grid; gap: 10px; }
-.review .sec + .sec { border-top: 1px solid var(--line); }
-.review h2 { font-size: 16px; }
-.review textarea { min-height: 360px; font-family: var(--font-body); line-height: 1.6; resize: vertical; }
-.review textarea.short { min-height: 90px; }
-.tblwrap { overflow-x: auto; }
-table.todos { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px; }
-table.todos th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 6px; border-bottom: 1px solid var(--line); }
-table.todos td { padding: 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
-table.todos input[type=text], table.todos select, table.todos input[type=date] { width: 100%; padding: 5px 7px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); }
-table.todos .quote { font-size: 12px; color: var(--muted); margin-top: 4px; }
-.missing { border-color: var(--wake) !important; }
-.steplist { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
+/* 寫入 monday 側抽屜 */
+.drawer { position: fixed; inset: 0 0 0 auto; width: min(440px, 100%); background: var(--surface); border-left: 1px solid var(--line); box-shadow: -12px 0 40px rgba(0,0,0,.18); z-index: 30; display: flex; flex-direction: column; }
+.drawer .dh { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.drawer .db { padding: 16px 18px; overflow-y: auto; display: grid; gap: 12px; align-content: start; }
+.drawer .field label { font-size: 12px; }
+.steplist { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
 .steplist li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 6px; }
-.steplist .s-ok { color: var(--ok); }
-.steplist .s-err { color: var(--danger); }
-.steplist .s-run { color: var(--wake); }
-.confirm { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 12px; display: grid; gap: 8px; font-size: 14px; }
-.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.gen { display: grid; gap: 10px; padding: 28px 24px; place-items: start; }
+.confirm { border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 8px; padding: 12px; display: grid; gap: 8px; }
 </style>
 
-<div class="wrap">
-  <header class="top">
-    <div class="brand">
-      <div class="mark" aria-hidden="true">議</div>
-      <div>
-        <h1>小議 會議助理</h1>
-        <div class="sub">研發文管課 · 寫回 monday「會議紀錄」板</div>
-      </div>
+<div class="shell">
+  <!-- 側欄 -->
+  <aside class="side" aria-label="會議清單">
+    <div class="top">
+      <button class="btn primary" type="button" id="draftNew"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 5v14M5 12h14"/></svg>新會議</button>
+      <button class="iconbtn" type="button" id="goAsk" title="問小議" aria-label="問小議"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></button>
     </div>
-    <nav class="steps" aria-label="步驟">
-      <button id="tabLive" aria-pressed="true">① 會議中</button>
-      <button id="tabReview" aria-pressed="false">② 檢核與寫回</button>
-    </nav>
-  </header>
+    <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="inp" id="meetSearch" placeholder="搜尋所有會議" aria-label="搜尋所有會議"></label>
+    <nav class="nav" id="meetList" aria-label="會議"></nav>
+    <div class="foot"><span id="draftCount"></span><span>草稿存在這台電腦</span></div>
+  </aside>
 
-  <section class="panel meta" aria-label="會議資訊">
-    <div class="field wide"><label for="mName">會議主題</label><input id="mName"></div>
-    <div class="field"><label for="mDate">會議日期</label><input id="mDate" type="date"></div>
-    <div class="field"><label for="mType">會議類型</label>
-      <select id="mType"><option>例行會議</option><option>專案會議</option><option>管理會議</option><option>跨部門會議</option></select></div>
-    <div class="field"><label for="mLoc">地點</label><select id="mLoc"></select></div>
-    <div class="field wide"><label>與會者（點選切換出席）</label><div class="people" id="people"></div></div>
-  </section>
-
-  <!-- LIVE -->
-  <main id="viewLive" class="live">
-    <section class="panel" aria-label="逐字稿">
-      <div class="recbar">
-        <button class="rec" id="recBtn"><span class="dot"></span><span id="recLbl">開始錄音</span></button>
-        <span class="timer mono" id="timer">00:00:00</span>
-        <span class="recstate" id="recState">尚未開始</span>
-        <span style="margin-left:auto" class="row">
-          <button class="btn" id="endBtn">結束會議並整理紀錄 →</button>
-        </span>
+  <!-- 主區 -->
+  <main class="main" id="viewLive">
+    <div class="head">
+      <div class="titlerow">
+        <input class="title" id="mName" aria-label="會議主題">
+        <button class="btn primary" type="button" id="writeOpen">寫入 monday</button>
+        <details class="menu"><summary class="btn">⋯ 更多</summary>
+          <div class="pop">
+            <button class="btn" type="button" id="draftClear">清空逐字稿</button>
+            <button class="btn" type="button" id="draftDel">刪除這場</button>
+          </div>
+        </details>
       </div>
-      <div class="speakers" id="speakers" aria-label="目前發言人"></div>
-      <div id="dictNotice" hidden class="notice warn" style="margin:12px 16px 0"></div>
+      <div class="metarow">
+        <label class="mi" title="資料夾"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><select class="plain" id="mFolder" aria-label="資料夾"></select></label>
+        <label class="mi" title="會議類型（決定紀錄格式與 monday 群組）"><select class="plain" id="mType" aria-label="會議類型"><option>例行會議</option><option>專案會議</option><option>管理會議</option><option>跨部門會議</option></select></label>
+        <label class="mi" title="會議日期"><input class="plain" id="mDate" type="date" aria-label="會議日期"><span id="hDow"></span></label>
+        <label class="mi" title="地點"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><select class="plain" id="mLoc" aria-label="地點"></select></label>
+        <span class="mi mono" id="hDur"></span>
+      </div>
+      <div class="attrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>
+        <span class="people" id="people" aria-label="與會者"></span>
+        <button class="chip add" type="button" id="pOpen" aria-expanded="false">＋ 加入與會者</button>
+      </div>
+      <section class="picker" id="pPicker" aria-label="加入與會者" hidden>
+        <div class="row"><input class="inp grow" id="pName" placeholder="輸入姓名，按 Enter 搜尋 monday"><button class="btn" type="button" id="pSearch">搜尋 monday</button><button class="btn ghost" type="button" id="pAdd">以名字加入（外部）</button><button class="btn ghost" type="button" id="pClose">完成</button></div>
+        <div class="people" id="pResults"></div>
+        <div class="lbl" id="pSugLbl">點一下加入</div>
+        <div class="people" id="pSuggest"></div>
+      </section>
+      <div class="metarow"><span class="speakers" id="speakers" aria-label="發言人（點選切換目前發言人）"></span></div>
+    </div>
+
+    <nav class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab="notes" aria-selected="true">紀錄<span class="tabbadge" id="qBadge"></span></button>
+      <button type="button" role="tab" data-tab="transcript" aria-selected="false">逐字稿</button>
+      <button type="button" role="tab" data-tab="ask" aria-selected="false">提問</button>
+      <button type="button" role="tab" data-tab="track" aria-selected="false">上次追蹤</button>
+    </nav>
+
+    <div class="pane" data-tabpane="notes" id="viewReview">
+      <div id="reviewMain"></div>
+    </div>
+
+    <div class="pane" data-tabpane="transcript" hidden>
+      <div class="trbar">
+        <div class="importbig" aria-label="加入逐字稿">
+          <label class="btn primary" for="importFile" style="cursor:pointer">📄 匯入逐字稿檔案</label>
+          <button class="btn" type="button" data-src="import" aria-pressed="false">貼上逐字稿</button>
+          <button class="btn" type="button" data-src="file" aria-pressed="false">錄音檔轉文字</button>
+          <button class="btn" type="button" data-src="teams" aria-pressed="false">Teams 線上會議</button>
+          <span class="small muted" id="trMsg">支援 .vtt / .txt / .srt（Teams、Word、拾音匯出都可以）</span>
+        </div>
+      </div>
+      <input type="file" id="importFile" accept=".vtt,.txt,.srt,text/plain,text/vtt" multiple hidden>
+      <div class="src" id="srcPanel" hidden>
+        <div class="srcpane" data-pane="file" id="fileBox" hidden>
+          <div id="fileState" class="small muted">檢查本機轉錄服務…</div>
+          <div id="fileUI" hidden class="srcpane">
+            <div class="row"><select class="inp grow" id="fileSel" aria-label="選擇錄音檔"></select><button class="btn ghost" type="button" id="fileRefresh">重新整理</button></div>
+            <div class="row small"><label><input type="checkbox" id="fileNewDraft" checked> 放進新的會議</label><label><input type="checkbox" id="fileAutoGen" checked> 轉完自動產生紀錄</label></div>
+            <div class="row"><button class="btn primary" type="button" id="fileGo">轉錄並產生紀錄</button><button class="btn" type="button" id="fileStop" hidden>停止等待</button><span class="small mono" id="fileProg"></span></div>
+          </div>
+        </div>
+        <div class="srcpane" data-pane="import" hidden>
+          <textarea id="importTx" class="short" rows="4" placeholder="或貼上逐字稿。「名字：內容」格式會自動對應發言人。"></textarea>
+          <div class="row"><button class="btn" id="importBtn">加入</button><span class="small muted" id="importMsg"></span></div>
+        </div>
+        <div class="srcpane" data-pane="teams" hidden>
+          <div class="seg" aria-label="收音方式"><button type="button" id="srcRoom" aria-pressed="true">不同步</button><button type="button" id="srcOnline" aria-pressed="false">同步 Claude 會議逐字稿</button></div>
+          <div class="srcpane" id="onlinePanel" hidden>
+            <div class="small muted">先在 claude.ai 把 Claude 派進 Teams 會議，逐字稿會依帳號標出發言人。</div>
+            <div class="row"><select id="mtgSel" class="inp grow" aria-label="選擇會議"><option value="">（先按「讀取我的會議」）</option></select><button class="btn" id="mtgLoad" type="button">讀取我的會議</button></div>
+            <div class="row"><button class="btn primary" id="mtgFollow" type="button" disabled>開始同步</button><button class="btn" id="mtgImport" type="button" disabled>匯入已結束會議</button><span class="small muted" id="mtgState"></span></div>
+          </div>
+        </div>
+      </div>
+      <div id="dictNotice" hidden class="notice warn" style="margin:10px 28px 0"></div>
+      <div id="listening" class="listening" hidden></div>
+      <div id="mapPanel" class="online" hidden></div>
       <div class="transcript" id="transcript" aria-live="polite"></div>
       <form class="manual" id="manualForm">
-        <input class="inp" id="manualIn" placeholder="手動補一句（以目前發言人記錄），Enter 送出">
+        <input class="inp" id="manualIn" placeholder="手動補一句，Enter 加入（可搭配 Windows 鍵 + H 語音輸入）">
         <button class="btn" type="submit">加入</button>
       </form>
-      <details class="imp">
-        <summary>匯入既有逐字稿（Teams 匯出或文字檔內容）</summary>
-        <div class="bd">
-          <textarea id="importTx" class="short" rows="5" placeholder="貼上逐字稿。格式「名字：內容」的行會自動對應發言人。"></textarea>
-          <div class="row"><button class="btn" id="importBtn">加入逐字稿</button><span class="small muted" id="importMsg"></span></div>
-        </div>
-      </details>
-    </section>
+      <label class="small muted autoc"><input type="checkbox" id="autoCommit"> 停頓 2 秒自動加入</label>
+    </div>
 
-    <aside class="side">
-      <section class="panel" aria-label="問小議">
-        <div class="hd"><h2>問小議</h2><span class="small muted">查 monday 資料</span></div>
-        <div class="bd">
-          <div class="wakehint">會議中說「<b>小議，</b>查一下…」，停頓約 3 秒後自動送出問題。也可以直接輸入。</div>
-          <div id="listening" class="listening" hidden></div>
-          <form class="ask" id="askForm"><input class="inp" id="askIn" placeholder="例：KM 客製功能上次說何時交付？"><button class="btn primary" type="submit">問</button></form>
-          <div id="qaList"></div>
-          <div class="small muted">知識來源：monday 板子、項目、更新與文件。KM、研發文管系統待串接。</div>
-        </div>
-      </section>
-      <section class="panel" aria-label="上次會議追蹤">
-        <div class="hd"><h2>上次會議追蹤</h2><button class="btn ghost" id="prevBtn">載入</button></div>
-        <div class="bd" id="prevBody"><div class="small muted">從板上找出同類型的上一場會議，列出本週要追蹤的進度與待辦，開場逐項確認用。</div></div>
-      </section>
-    </aside>
+    <div class="pane" data-tabpane="ask" hidden>
+      <div class="bd">
+        <div class="small muted">會議中說「<b style="color:var(--wake)">小議，</b>查一下…」，停頓約 3 秒自動送出；也可以直接輸入。會查 monday 的板子、項目、更新與文件，並附上來源連結。</div>
+        <form class="ask" id="askForm"><input class="inp" id="askIn" placeholder="例：KM 客製功能上次說何時交付？"><button class="btn primary" type="submit">問</button></form>
+        <div id="qaList"></div>
+      </div>
+    </div>
+
+    <div class="pane" data-tabpane="track" hidden>
+      <div class="bd">
+        <div class="prevpick" id="prevPick"></div>
+        <div id="prevBody"><div class="small muted">選擇要追蹤的會議，列出還沒完成的子項目待辦。</div></div>
+      </div>
+    </div>
   </main>
 
-  <!-- REVIEW -->
-  <main id="viewReview" class="review" hidden>
-    <section class="panel" id="reviewMain"></section>
-    <aside class="side">
-      <section class="panel">
-        <div class="hd"><h2>寫回 monday</h2></div>
-        <div class="bd" id="writeBody"></div>
-      </section>
-    </aside>
-  </main>
+  <!-- 底部錄音列 -->
+  <footer class="dock" id="roomBar">
+    <button class="rec" id="recBtn"><span class="dot"></span><span id="recLbl">開始錄音</span></button>
+    <span class="timer mono" id="timer">00:00:00</span>
+    <span class="recstate" id="recState"></span>
+    <span class="grow"></span>
+    <button class="btn" type="button" id="endBtn">結束，產生紀錄 →</button>
+  </footer>
 </div>
 
+<!-- 寫入 monday -->
+<aside class="drawer" id="writeDrawer" hidden aria-label="寫入 monday">
+  <div class="dh"><h2 style="font-size:16px">寫入 monday</h2><button class="iconbtn" type="button" id="writeClose" aria-label="關閉">✕</button></div>
+  <div class="db" id="writeBody"></div>
+</aside>
+
+<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
 <script>
 (() => {
   "use strict";
+  // 語音辨識有時輸出簡體字：一律轉成台灣繁體（含台灣用語）
+  let toTW = (s) => s;
+  try { if (window.OpenCC) { const c = OpenCC.Converter({ from: "cn", to: "twp" }); toTW = (s) => { try { return c(String(s)); } catch (_) { return s; } }; } } catch (_) {}
   const MONDAY = "monday.com";
   const BOARD = 5025207374;
   const SUB_BOARD = 5025771383;
@@ -260,12 +397,15 @@ table.todos .quote { font-size: 12px; color: var(--muted); margin-top: 4px; }
   const SUBCOL = { person: "person", timeline: "timerange_mkz3bzhh", status: "status", quote: "long_text_mkzap4g1" };
   const GROUP_BY_TYPE = { "例行會議": "topics", "專案會議": "group_title", "管理會議": "group_mky0m8wy", "跨部門會議": "group_mky0jr7s" };
   const LOCATIONS = ["【研發】201小會議室", "【研發】202大會議室", "【本廠】1F大會議室", "【本廠】1F小會議室", "【本廠】2F大會議室(前)", "【本廠】2F小會議室(後)", "【本廠】3F大會議室", "【本廠】3F小會議室", "【彰濱】會議室", "【台中】會議室", "【線上會議】"];
+  // 研發文管課（monday 團隊 29698）成員，名稱與 monday 一致
   const TEAM = [
     { id: 77446259, name: "Michael.Ma_馬洪鈞", short: "洪鈞" },
-    { id: 77562671, name: "Ann.Shih_施俞安", short: "俞安" },
-    { id: 95449955, name: "Cheryl.Wang_王詩涵", short: "詩涵" },
-    { id: 79546935, name: "Jennifer.Huang_黃宜靖", short: "宜靖" },
     { id: 77562661, name: "Ritana.Chen_陳芯宜", short: "芯宜" },
+    { id: 77562671, name: "Ann.Shih_施俞安", short: "俞安" },
+    { id: 79546935, name: "Jennifer.Huang_黃宜靖", short: "宜靖" },
+    { id: 90238788, name: "Sandy.Huang_黃怡珊", short: "怡珊" },
+    { id: 95449955, name: "Cheryl.Wang_王詩涵", short: "詩涵" },
+    { id: 96075570, name: "Susan.Su_蘇珊慧", short: "珊慧" },
   ];
   const WAKE = /(小議|小義|小易|曉議|小譯|小意)[，,、。\s]*/;
   const STORE_KEY = "xiaoyi-draft-v1";
@@ -283,28 +423,75 @@ table.todos .quote { font-size: 12px; color: var(--muted); margin-top: 4px; }
     return { year: t.getUTCFullYear(), week: Math.ceil(((t - y0) / 86400000 + 1) / 7) };
   }
   const defaultName = (date) => { const w = isoWeek(date); return `${String(w.year).slice(2)}W${pad(w.week)}研發文管課週會`; };
-  const person = (id) => TEAM.find((p) => p.id === id);
-  const shortOf = (id) => person(id)?.short || "其他";
-
-  // ---------- state ----------
-  const S = {
-    meta: { name: "", date: today(), type: "例行會議", loc: "【研發】201小會議室" },
-    present: TEAM.map((p) => p.id),
-    speaker: TEAM[0].id,
-    lines: [],
-    elapsed: 0,
-    review: null,
+  // 與會者名冊：課內同仁為預設，可加入任何 monday 使用者或外部人士（key = monday id 或 "n:名字"）
+  const mkPerson = (id, name, unit) => {
+    const zh = String(name).split("_")[1];
+    const short = zh ? (zh.length >= 3 ? zh.slice(-2) : zh) : String(name).trim();
+    return { key: id ? String(id) : "n:" + short, id: id || null, name: String(name), short, unit: unit || "" };
   };
-  S.meta.name = defaultName(S.meta.date);
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
-    if (saved && Array.isArray(saved.lines)) Object.assign(S, { meta: saved.meta || S.meta, present: saved.present || S.present, lines: saved.lines, elapsed: saved.elapsed || 0, review: saved.review || null });
-  } catch (_) {}
-  let saveT = 0;
-  function save() {
-    clearTimeout(saveT);
-    saveT = setTimeout(() => { try { localStorage.setItem(STORE_KEY, JSON.stringify({ meta: S.meta, present: S.present, lines: S.lines, elapsed: S.elapsed, review: S.review })); } catch (_) {} }, 400);
+  const TEAM_PEOPLE = TEAM.map((p) => ({ key: String(p.id), id: p.id, name: p.name, short: p.short, unit: "研發文管課" }));
+  const person = (key) => S.people.find((p) => p.key === String(key));
+  const shortOf = (key) => (key ? person(key)?.short : null) || "其他";
+  const label = (p) => (p ? (p.id ? p.name : p.short) : "其他"); // 畫面顯示用：monday 使用者顯示 monday 上的名稱
+  const labelOf = (key) => (key && person(key) ? label(person(key)) : "其他");
+  const nameOf = (l) => (l.who ? shortOf(l.who) : (l.name || "其他"));
+  const presentPeople = () => S.people.filter((p) => S.present.includes(p.key));
+  function addPerson(p) { if (!person(p.key)) S.people.push(p); if (!S.present.includes(p.key)) S.present.push(p.key); save(); return person(p.key); }
+  function matchPerson(label) {
+    const s = String(label || "").trim().toLowerCase(); if (!s) return null;
+    return S.people.find((p) => {
+      const full = p.name.toLowerCase(), zh = (p.name.split("_")[1] || "").toLowerCase();
+      const en = p.name.split("_")[0].toLowerCase(), first = en.split(".")[0];
+      return s === p.short.toLowerCase() || s === full || s.includes(p.short.toLowerCase()) || (zh && s.includes(zh)) || (p.name.includes("_") && (s === en || s === first || s.startsWith(first + " ") || s.startsWith(first + ".")));
+    }) || null;
   }
+
+  // ---------- state：可同時保留多場會議草稿，S 永遠是目前選取的那一場 ----------
+  const DRAFTS_KEY = "xiaoyi-drafts-v2";
+  const blankDraft = () => {
+    const d = today();
+    return { meta: { name: defaultName(d), date: d, type: "例行會議", loc: "" }, folder: null, people: [], present: [], lines: [], elapsed: 0, review: null, updated: Date.now() };
+  };
+  // 自訂資料夾（只存在這台電腦）；會議的 folder 為 null 時放在「其他會議」
+  const FOLDERS_KEY = "xiaoyi-folders-v1";
+  let folders = [];
+  try { folders = JSON.parse(localStorage.getItem(FOLDERS_KEY) || "[]") || []; } catch (_) { folders = []; }
+  const saveFolders = () => { try { localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders)); } catch (_) {} };
+  const S = { ...blankDraft(), speaker: null };
+  let drafts = {}, curId = null;
+  const newId = () => "m" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const toKey = (v) => (v === null || v === undefined || v === "" ? null : String(v));
+  function normalize() {
+    // 舊版草稿以數字 id 記錄，轉成 key 字串；補上新加入的課內成員
+    S.present = (S.present || []).map(toKey).filter(Boolean);
+    (S.lines || []).forEach((l) => { l.who = toKey(l.who); });
+    if (S.review) S.review.todos.forEach((t) => { t.owner = toKey(t.owner); });
+    S.people = S.people || [];
+    S.people.forEach((p) => { const t = TEAM_PEOPLE.find((x) => x.key === p.key); if (t) { p.name = t.name; p.short = t.short; } });
+    if (S.speaker && !S.present.includes(S.speaker)) S.speaker = null;
+  }
+  // 一次性：舊版新會議會預設帶入課內 7 人；還沒開始記錄的草稿把這個預設拿掉
+  function dropTeamDefault(d) {
+    const keys = TEAM_PEOPLE.map((p) => p.key);
+    if (!d || (d.lines || []).length || d.review) return;
+    const pres = (d.present || []).map(String);
+    if (pres.length === keys.length && keys.every((k) => pres.includes(k))) { d.present = []; d.people = (d.people || []).filter((p) => !keys.includes(String(p.key))); }
+    if (d.meta && d.meta.loc === "【研發】201小會議室") d.meta.loc = "";
+  }
+  try {
+    const store = JSON.parse(localStorage.getItem(DRAFTS_KEY) || "null");
+    if (store?.drafts && Object.keys(store.drafts).length) { drafts = store.drafts; curId = drafts[store.current] ? store.current : Object.keys(drafts)[0]; }
+    else {
+      const old = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+      curId = newId(); drafts[curId] = old && Array.isArray(old.lines) ? { ...blankDraft(), ...old, updated: Date.now() } : blankDraft();
+    }
+  } catch (_) { curId = newId(); drafts[curId] = blankDraft(); }
+  try { if (!localStorage.getItem("xiaoyi-noteam-v1")) { Object.values(drafts).forEach(dropTeamDefault); localStorage.setItem("xiaoyi-noteam-v1", "1"); } } catch (_) {}
+  Object.assign(S, drafts[curId]); normalize();
+  const draftOf = () => ({ meta: S.meta, folder: S.folder || null, people: S.people, present: S.present, lines: S.lines, elapsed: S.elapsed, review: S.review, updated: Date.now() });
+  function persist() { drafts[curId] = draftOf(); try { localStorage.setItem(DRAFTS_KEY, JSON.stringify({ current: curId, drafts })); } catch (_) {} }
+  let saveT = 0;
+  function save() { clearTimeout(saveT); saveT = setTimeout(() => { persist(); renderDrafts(); renderHead(); }, 400); }
 
   // ---------- capabilities ----------
   let dict = null, sample = null, mcp = null;
@@ -312,10 +499,10 @@ table.todos .quote { font-size: 12px; color: var(--muted); margin-top: 4px; }
   if (window.claude?.use) {
     claude.use("dictation").then((d) => { dict = d; ready.dict = true; setupDictation(); }).catch(() => { ready.dict = true; setupDictation(); });
     claude.use("sample").then((s) => { sample = s; ready.sample = true; }).catch(() => { ready.sample = true; });
-    claude.use("mcp").then((m) => { mcp = m; ready.mcp = true; }).catch(() => { ready.mcp = true; });
+    claude.use("mcp").then((m) => { mcp = m; ready.mcp = true; setupFileBox(); }).catch(() => { ready.mcp = true; setupFileBox(); });
   } else {
     ready.dict = ready.sample = ready.mcp = true;
-    setTimeout(setupDictation, 0);
+    setTimeout(setupDictation, 0); setTimeout(setupFileBox, 0);
   }
 
   function mcpMsg(e) {
@@ -351,46 +538,125 @@ table.todos .quote { font-size: 12px; color: var(--muted); margin-top: 4px; }
   const clip = (v, n = 12000) => { const s = typeof v === "string" ? v : JSON.stringify(v); return s.length > n ? s.slice(0, n) + "…(截斷)" : s; };
 
   // ---------- meta ----------
+  { const o = document.createElement("option"); o.value = ""; o.textContent = "選擇地點"; $("mLoc").append(o); }
   LOCATIONS.forEach((l) => { const o = document.createElement("option"); o.textContent = l; $("mLoc").append(o); });
-  function renderMeta() {
-    $("mName").value = S.meta.name; $("mDate").value = S.meta.date; $("mType").value = S.meta.type; $("mLoc").value = S.meta.loc;
-    const ppl = $("people"); ppl.textContent = "";
-    TEAM.forEach((p) => {
-      const b = document.createElement("button"); b.type = "button"; b.className = "chip";
-      b.setAttribute("aria-pressed", String(S.present.includes(p.id)));
-      b.textContent = p.short;
-      b.onclick = () => { S.present = S.present.includes(p.id) ? S.present.filter((x) => x !== p.id) : [...S.present, p.id]; save(); renderMeta(); renderSpeakers(); };
-      ppl.append(b);
-    });
+  function renderHead() {
+    const d = new Date(S.meta.date + "T00:00:00");
+    $("hDow").textContent = isNaN(d) ? "" : `星期${"日一二三四五六"[d.getDay()]}`;
+    const fs = $("mFolder");
+    fs.innerHTML = `<option value="">其他會議</option>` + folders.map((f) => `<option value="${esc(f.id)}">${esc(f.name)}</option>`).join("") + `<option value="__new">＋ 新增資料夾…</option>`;
+    fs.value = S.folder && folders.some((f) => f.id === S.folder) ? S.folder : "";
+    const n = S.lines.length;
+    $("hDur").textContent = S.elapsed ? `${Math.max(1, Math.round(S.elapsed / 60))} 分鐘` : (n ? `${n} 段逐字稿` : "");
   }
+  function renderMeta() {
+    renderHead();
+    $("mName").value = S.meta.name; $("mDate").value = S.meta.date; $("mType").value = S.meta.type; $("mLoc").value = S.meta.loc;
+    $("mLoc").classList.toggle("muted", !S.meta.loc);
+    const ppl = $("people"); ppl.textContent = "";
+    presentPeople().forEach((p) => {
+      const c = document.createElement("span"); c.className = "chip";
+      c.title = [p.name, p.unit].filter(Boolean).join("・");
+      c.innerHTML = esc(label(p)) + (p.id ? "" : `<span class="k">外部</span>`);
+      const x = document.createElement("button"); x.type = "button"; x.className = "x"; x.textContent = "×"; x.setAttribute("aria-label", "移除 " + label(p));
+      x.onclick = () => { S.present = S.present.filter((k) => k !== p.key); if (S.speaker === p.key) S.speaker = null; save(); renderMeta(); renderSpeakers(); renderTranscript(); };
+      c.append(x); ppl.append(c);
+    });
+    if (!S.present.length) ppl.innerHTML = `<span class="small muted">尚未選擇與會者</span>`;
+    renderSuggest();
+  }
+  // 可直接點選加入的人：課內同仁＋其他會議用過的人＋這場移除過的人
+  function renderSuggest() {
+    const box = $("pSuggest"); box.textContent = "";
+    const seen = new Set(S.present), list = [];
+    const take = (p) => { if (p && p.key && !seen.has(String(p.key))) { seen.add(String(p.key)); list.push(p); } };
+    S.people.forEach(take); TEAM_PEOPLE.forEach(take);
+    Object.values(drafts).forEach((d) => (d.people || []).forEach(take));
+    list.forEach((p) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip sug";
+      b.title = [p.name, p.unit].filter(Boolean).join("・");
+      b.innerHTML = "＋ " + esc(label(p)) + (p.unit ? `<span class="k">${esc(p.unit)}</span>` : (p.id ? "" : `<span class="k">外部</span>`));
+      b.onclick = () => { addPerson({ ...p }); renderMeta(); renderSpeakers(); renderTranscript(); };
+      box.append(b);
+    });
+    $("pSugLbl").hidden = !list.length;
+  }
+  const setPicker = (open) => { $("pPicker").hidden = !open; $("pOpen").setAttribute("aria-expanded", String(open)); if (open) { renderSuggest(); $("pName").focus(); } };
+  $("pOpen").onclick = () => setPicker($("pPicker").hidden);
+  $("pClose").onclick = () => setPicker(false);
+  // 新增與會者：搜尋 monday 使用者，或以名字直接加入（外部人士）
+  async function searchUsers(q) {
+    const p = await callMonday("list_users_and_teams", { name: q });
+    const txt = typeof p === "string" ? p : (p?.data ?? JSON.stringify(p));
+    const out = []; const re = /ID:\s*(\d+)\s*\n\s*Name:\s*([^\n]+)(?:[\s\S]*?Title:\s*([^\n]*))?/g; let m;
+    String(txt).split(/\n\s*\n/).forEach((chunk) => { re.lastIndex = 0; if ((m = re.exec(chunk))) out.push({ id: Number(m[1]), name: m[2].trim(), unit: (m[3] || "").trim() }); });
+    return out.slice(0, 8);
+  }
+  $("pSearch").onclick = async () => {
+    const q = $("pName").value.trim(); if (!q) { $("pName").focus(); return; }
+    const box = $("pResults"); box.innerHTML = `<span class="small muted">搜尋中…</span>`;
+    try {
+      const rs = await searchUsers(q);
+      box.textContent = "";
+      if (!rs.length) { box.innerHTML = `<span class="small muted">monday 找不到「${esc(q)}」，可按「以名字加入」。</span>`; return; }
+      rs.forEach((r) => {
+        const b = document.createElement("button"); b.type = "button"; b.className = "chip";
+        b.innerHTML = `＋ ${esc(r.name)}${r.unit ? `<span class="k">${esc(r.unit)}</span>` : ""}`;
+        b.onclick = () => { addPerson(mkPerson(r.id, r.name, r.unit)); box.textContent = ""; $("pName").value = ""; renderMeta(); renderSpeakers(); renderTranscript(); };
+        box.append(b);
+      });
+    } catch (e) { box.innerHTML = `<span class="small s-err">${esc(mcpMsg(e))}</span>`; }
+  };
+  $("pAdd").onclick = () => {
+    const q = $("pName").value.trim(); if (!q) { $("pName").focus(); return; }
+    addPerson(mkPerson(null, q, "")); $("pName").value = ""; $("pResults").textContent = ""; renderMeta(); renderSpeakers(); renderTranscript();
+  };
+  $("pName").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("pSearch").click(); } });
   $("mName").oninput = (e) => { S.meta.name = e.target.value; save(); };
   $("mDate").onchange = (e) => {
     const old = defaultName(S.meta.date); S.meta.date = e.target.value || today();
     if (S.meta.name === old) S.meta.name = defaultName(S.meta.date);
     save(); renderMeta();
   };
-  $("mType").onchange = (e) => { S.meta.type = e.target.value; save(); };
+  $("mType").onchange = (e) => {
+    const wasDefault = S.meta.name === defaultName(S.meta.date) || S.meta.name === `${S.meta.date} ${S.meta.type}`;
+    S.meta.type = e.target.value;
+    if (wasDefault) S.meta.name = S.meta.type === "例行會議" ? defaultName(S.meta.date) : `${S.meta.date} ${S.meta.type}`;
+    save(); renderMeta();
+  };
   $("mLoc").onchange = (e) => { S.meta.loc = e.target.value; save(); };
+  $("mFolder").onchange = (e) => {
+    if (e.target.value === "__new") { renderHead(); startNewFolder(S); return; }
+    S.folder = e.target.value || null; persist(); renderDrafts(); renderHead();
+  };
 
   // ---------- speakers ----------
-  function speakerList() { return [...TEAM.filter((p) => S.present.includes(p.id)), { id: null, short: "其他" }]; }
+  function speakerList() { return [...presentPeople(), { key: null, short: "其他" }]; }
   function renderSpeakers() {
     const box = $("speakers"); box.textContent = "";
-    const l = document.createElement("span"); l.className = "lbl"; l.textContent = "目前發言："; box.append(l);
+    box.parentElement.hidden = !S.present.length;
+    const l =document.createElement("span"); l.className = "lbl"; l.textContent = "目前發言："; box.append(l);
     speakerList().forEach((p, i) => {
       const b = document.createElement("button"); b.type = "button"; b.className = "spk";
-      b.setAttribute("aria-pressed", String(S.speaker === p.id));
-      b.innerHTML = `<span class="k">${i + 1}</span>${esc(p.short)}`;
-      b.onclick = () => setSpeaker(p.id);
+      b.setAttribute("aria-pressed", String(S.speaker === p.key));
+      b.style.setProperty("--c", p.key ? `var(--c${(i % 7) + 1})` : "var(--c8)");
+      b.title = p.key ? "設為目前發言人" : "發言人不在名單內";
+      b.innerHTML = `<span class="k">${i < 9 ? i + 1 : ""}</span>${esc(p.key ? label(p) : "其他")}`;
+      b.onclick = () => setSpeaker(p.key);
       box.append(b);
     });
     const h = document.createElement("span"); h.className = "small muted"; h.style.marginLeft = "auto"; h.textContent = "鍵盤數字鍵也可切換"; box.append(h);
   }
-  function setSpeaker(id) { S.speaker = id; forceNewLine = true; renderSpeakers(); }
+  function setSpeaker(id) {
+    // Windows 語音輸入模式：切換發言人前先把已說的話歸給上一位，再把游標放回輸入框
+    if (winOnly() && recording) { clearTimeout(autoT); const v = $("manualIn").value.trim(); if (v) { addText(v, S.speaker, { newLine: true }); $("manualIn").value = ""; } }
+    S.speaker = id; forceNewLine = true; renderSpeakers();
+    if (winOnly() && recording) $("manualIn").focus();
+  }
   document.addEventListener("keydown", (e) => {
     if (e.target.closest("input, textarea, select") || e.ctrlKey || e.metaKey || e.altKey) return;
     const n = Number(e.key); const list = speakerList();
-    if (n >= 1 && n <= list.length && !$("viewLive").hidden) { e.preventDefault(); setSpeaker(list[n - 1].id); }
+    if (n >= 1 && n <= list.length && !$("viewLive").hidden) { e.preventDefault(); setSpeaker(list[n - 1].key); }
   });
 
   // ---------- transcript ----------
@@ -415,80 +681,357 @@ table.todos .quote { font-size: 12px; color: var(--muted); margin-top: 4px; }
     const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
     box.textContent = "";
     if (!S.lines.length && !partialText) {
-      box.innerHTML = `<div class="empty"><strong>逐字稿會出現在這裡。</strong>
-        <span>按「開始錄音」後，小議會把大家說的話轉成文字。誰在報告，就點上方他的名字（或按數字鍵），每段話會記在那個人底下。</span>
-        <span>沒有麥克風時，可以用下方手動輸入，或展開「匯入既有逐字稿」。</span></div>`;
+      box.innerHTML = `<div class="empty"><strong>按「開始錄音」開始這場會議</strong>
+        <span>誰在報告就點上方他的名字（或按數字鍵）。已經有逐字稿檔案，按上方的「📄 匯入逐字稿檔案」。</span></div>`;
       return;
     }
     const frag = document.createDocumentFragment();
+    const opts = presentPeople();
     S.lines.forEach((ln, idx) => {
       const row = document.createElement("div"); row.className = "line" + (ln.wake ? " wake" : "");
       const t = document.createElement("span"); t.className = "t mono"; t.textContent = ln.t;
       const sel = document.createElement("select"); sel.setAttribute("aria-label", "發言人");
-      [...TEAM, { id: null, short: "其他" }].forEach((p) => { const o = document.createElement("option"); o.value = p.id ?? ""; o.textContent = p.short; if ((ln.who ?? null) === p.id) o.selected = true; sel.append(o); });
-      sel.onchange = () => { S.lines[idx].who = sel.value ? Number(sel.value) : null; save(); };
+      const list = ln.who && !opts.some((p) => p.key === ln.who) && person(ln.who) ? [...opts, person(ln.who)] : opts;
+      [...list, { key: null, short: ln.name && !ln.who ? ln.name : "其他" }].forEach((p) => { const o = document.createElement("option"); o.value = p.key ?? ""; o.textContent = p.key ? label(p) : p.short; if ((ln.who ?? null) === p.key) o.selected = true; sel.append(o); });
+      sel.onchange = () => { S.lines[idx].who = sel.value || null; save(); renderMapping(); };
       const tx = document.createElement("div"); tx.className = "tx"; tx.textContent = ln.text;
       row.append(t, sel, tx); frag.append(row);
     });
     if (partialText) {
       const row = document.createElement("div"); row.className = "line";
-      row.innerHTML = `<span class="t mono">${clock()}</span><span class="small muted" style="padding-top:2px">${esc(shortOf(S.speaker))}</span><div class="tx partial">${esc(partialText)}</div>`;
+      row.innerHTML = `<span class="t mono">${clock()}</span><span class="small muted" style="padding-top:2px">${esc(labelOf(S.speaker))}</span><div class="tx partial">${esc(partialText)}</div>`;
       frag.append(row);
     }
     box.append(frag);
     if (atBottom) box.scrollTop = box.scrollHeight;
+    renderMapping();
   }
-  $("manualForm").onsubmit = (e) => { e.preventDefault(); const v = $("manualIn").value.trim(); if (v) { addText(v, S.speaker, { newLine: true }); $("manualIn").value = ""; } };
+  // 發言人對應：把匯入逐字稿中的「說話者 1」「Room」等標籤，一次對應到與會者
+  function renderMapping() {
+    const panel = $("mapPanel"); if (!panel) return;
+    const counts = {};
+    S.lines.forEach((l) => { if (!l.who && l.name) counts[l.name] = (counts[l.name] || 0) + 1; });
+    const labels = Object.keys(counts);
+    if (!labels.length) { panel.hidden = true; panel.textContent = ""; return; }
+    panel.hidden = false;
+    const opts = presentPeople().map((p) => `<option value="${esc(p.key)}">${esc(label(p))}</option>`).join("");
+    panel.innerHTML = `<div class="small"><b>發言人對應</b><span class="muted">：逐字稿裡有 ${labels.length} 個未對應的發言人，選好後整份逐字稿一起更新。</span></div>` +
+      labels.map((lb, i) => `<div class="row small"><span style="min-width:110px">${esc(lb)}<span class="muted">（${counts[lb]} 段）</span></span>→
+        <select class="inp" style="width:auto" data-i="${i}"><option value="">保留原名</option>${opts}<option value="__new">＋ 以「${esc(lb)}」加入與會者</option></select></div>`).join("");
+    panel.querySelectorAll("select").forEach((sel) => {
+      sel.onchange = () => {
+        const lb = labels[Number(sel.dataset.i)]; let key = sel.value; if (!key) return;
+        if (key === "__new") key = addPerson(mkPerson(null, lb, "")).key;
+        S.lines.forEach((l) => { if (!l.who && l.name === lb) l.who = key; });
+        save(); renderMeta(); renderSpeakers(); renderTranscript();
+      };
+    });
+  }
+  $("manualForm").onsubmit = (e) => { e.preventDefault(); clearTimeout(autoT); const v = $("manualIn").value.trim(); if (v) { addText(v, S.speaker, { newLine: true }); $("manualIn").value = ""; } };
+  let autoT = 0, composing = false;
+  $("manualIn").addEventListener("compositionstart", () => { composing = true; });
+  $("manualIn").addEventListener("compositionend", () => { composing = false; armAuto(); });
+  $("manualIn").addEventListener("input", armAuto);
+  $("manualIn").addEventListener("input", () => { if (winOnly() && recording) $("recState").textContent = "Windows 語音輸入中"; });
+  function armAuto() {
+    clearTimeout(autoT);
+    if (!$("autoCommit").checked) return;
+    autoT = setTimeout(() => {
+      if (composing) return;
+      const v = $("manualIn").value.trim();
+      if (v) { addText(v, S.speaker); $("manualIn").value = ""; }
+    }, 2000);
+  }
+  $("autoCommit").onchange = () => { if ($("autoCommit").checked) $("manualIn").focus(); };
+  // 支援三種格式：「名字：內容」、Teams .vtt（<v 名字>內容）、Teams Word 匯出（名字 0:03 換行 內容）
+  function parseTranscript(raw) {
+    const out = []; let cur = null, curT = "匯入";
+    const isVtt = /^﻿?WEBVTT/.test(String(raw).trim());
+    const push = (label, text, t) => {
+      text = String(text || "").replace(/<\/?v[^>]*>/g, "").trim(); if (!text) return;
+      const p = matchPerson(label);
+      const last = out[out.length - 1];
+      if (last && last.label === label && last.text.length < 320) { last.text += text; return; }
+      out.push({ t: t || "匯入", who: p ? p.key : null, name: p ? undefined : (label || undefined), text, label });
+    };
+    raw.split(/\r?\n/).forEach((l) => {
+      l = l.trim();
+      if (!l || /^WEBVTT/.test(l) || /^NOTE\b/.test(l) || /^\d+$/.test(l) || /^[0-9a-f-]{20,}(\/\d+-\d+)?$/i.test(l)) return;
+      const ts = l.match(/^(\d{1,2}:)?\d{2}:\d{2}[.,]\d{3}\s*-->/);
+      if (ts) { curT = l.slice(0, 8).replace(/[.,].*$/, ""); return; }
+      const v = l.match(/^<v\s+([^>]+)>(.*)$/);
+      if (v) { cur = v[1].trim(); push(cur, v[2], curT); return; }
+      if (isVtt) { push(cur, l, curT); return; } // .vtt 字幕行：不要把句中的冒號誤判成發言人
+      const hd = l.match(/^(.{1,40}?)\s+(\d{1,2}:\d{2}(?::\d{2})?)$/);
+      if (hd && !/[。，,.!?！？]/.test(hd[1])) { cur = hd[1].trim(); curT = hd[2]; return; }
+      const hd2 = l.match(/^(\d{1,2}:\d{2}(?::\d{2})?)\s+(.{1,40})$/); // Word 轉錄：「00:00:03 說話者 1」
+      if (hd2 && !/[。，,.!?！？]/.test(hd2[2])) { curT = hd2[1]; cur = hd2[2].trim(); return; }
+      const m = l.match(/^(?:\[?[\d:]+\]?\s*)?([^:：]{1,30}?)\s*[:：]\s*(.+)$/);
+      if (m && (matchPerson(m[1]) || m[1].length <= 12)) { cur = m[1].trim(); push(cur, m[2], curT); return; }
+      push(cur, l, curT);
+    });
+    return out.map(({ label, ...r }) => r);
+  }
+  $("importFile").onchange = async () => {
+    const files = [...($("importFile").files || [])]; if (!files.length) return;
+    let total = 0, named = 0;
+    for (const f of files) {
+      const rows = parseTranscript(toTW(await f.text()));
+      S.lines.push(...rows); total += rows.length; named += rows.filter((r) => r.who).length;
+    }
+    $("importFile").value = ""; save(); renderTranscript();
+    $("trMsg").textContent = `已從 ${files.length} 個檔案加入 ${total} 段。` + (named < total ? "發言人可在下方「發言人對應」設定。" : "");
+  };
   $("importBtn").onclick = () => {
     const raw = $("importTx").value; if (!raw.trim()) return;
-    let n = 0;
-    raw.split(/\r?\n/).forEach((l) => {
-      l = l.trim(); if (!l) return;
-      const m = l.match(/^(?:\[?[\d:]+\]?\s*)?([^:：\s]{1,20})\s*[:：]\s*(.+)$/);
-      let who = null, text = l;
-      if (m) { const p = TEAM.find((x) => m[1].includes(x.short) || x.name.includes(m[1])); if (p) { who = p.id; text = m[2]; } }
-      S.lines.push({ t: "匯入", who, text }); n++;
-    });
-    save(); renderTranscript(); $("importTx").value = ""; $("importMsg").textContent = `已加入 ${n} 行。`;
+    const rows = parseTranscript(raw);
+    S.lines.push(...rows);
+    const named = rows.filter((r) => r.who).length;
+    save(); renderTranscript(); $("importTx").value = "";
+    $("importMsg").textContent = `已加入 ${rows.length} 段，其中 ${named} 段自動對應到與會者。` + (named < rows.length ? "其餘請在逐字稿上方的「發言人對應」選擇。" : "");
   };
 
   // ---------- recording ----------
-  let recording = false, tick = 0, useLang = true;
+  let recording = false, tick = 0, useLang = true, winVoice = false;
+  // 中文介面的 Chrome：claude.ai 內建語音不能用時，直接試 Chrome 的語音辨識（支援繁中）；被擋才改用 Win+H
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let wsr = null, wsrOn = false, wsrBlocked = !SR;
+  const winOnly = () => winVoice && wsrBlocked;
+  function wsrStart() {
+    const r = new SR(); r.lang = "zh-TW"; r.continuous = true; r.interimResults = true;
+    r.onstart = () => { $("recState").textContent = "收音中（Chrome 語音辨識）"; };
+    r.onresult = (e) => {
+      let interim = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const res = e.results[i];
+        if (res.isFinal) { partialText = ""; addText(toTW(res[0].transcript)); } else interim += res[0].transcript;
+      }
+      partialText = toTW(interim); renderTranscript();
+    };
+    r.onerror = (e) => {
+      if (["not-allowed", "service-not-allowed", "audio-capture"].includes(e.error)) {
+        wsrBlocked = true; wsrOn = false; setRecUI("listening");
+        $("recState").innerHTML = `Chrome 語音被擋（${esc(e.error)}）<b>：請按鍵盤 Windows 鍵 + H</b>`;
+        $("manualIn").focus();
+      } else if (e.error !== "no-speech" && e.error !== "aborted") $("recState").textContent = "語音辨識中斷（" + e.error + "），自動重試中…";
+    };
+    r.onend = () => { if (wsrOn) { try { r.start(); } catch (_) {} } };
+    wsr = r; wsrOn = true;
+    try { r.start(); } catch (err) { r.onerror({ error: "not-allowed" }); }
+  }
+  function wsrStop() { wsrOn = false; try { wsr?.stop(); } catch (_) {} partialText = ""; }
   function fmtElapsed(s) { return `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`; }
   function setRecUI(state, reason) {
     const on = state === "listening" || state === "starting";
     recording = on;
     $("recBtn").classList.toggle("on", on);
-    $("recLbl").textContent = on ? "暫停錄音" : (S.elapsed ? "繼續錄音" : "開始錄音");
+    $("recLbl").textContent = winOnly() ? (on ? "結束計時" : (S.elapsed ? "繼續計時" : "開始計時")) : (on ? "暫停錄音" : (S.elapsed ? "繼續錄音" : "開始錄音"));
     const map = { starting: "啟動麥克風中…", listening: "收音中", finishing: "處理最後一句…", idle: "已暫停" };
     const why = { viewer_stopped: "（已在上方停止）", hidden: "（切換分頁時自動暫停，請按繼續）", time_limit: "（單次錄音上限 60 分鐘，請按繼續）", not_granted: "（麥克風未授權）", rate_limited: "（語音服務忙碌，稍後再按）", upstream_error: "（麥克風或語音服務錯誤，請再按一次）", unavailable: "（此處不支援語音輸入）", dismissed: "（未回答授權詢問）" };
     $("recState").textContent = (map[state] || state) + (reason && why[reason] ? why[reason] : "");
     clearInterval(tick);
-    if (on) tick = setInterval(() => { S.elapsed++; $("timer").textContent = fmtElapsed(S.elapsed); if (S.elapsed % 10 === 0) save(); }, 1000);
+    if (on) tick = setInterval(() => { S.elapsed++; $("timer").textContent = fmtElapsed(S.elapsed); if (S.elapsed % 10 === 0) { save(); renderHead(); } }, 1000);
   }
   function setupDictation() {
     $("timer").textContent = fmtElapsed(S.elapsed);
     if (!dict) {
-      $("recBtn").disabled = true;
+      // 中文介面的瀏覽器用不了 claude.ai 內建語音：改用 Windows 內建語音輸入（Win+H），不用安裝任何東西
+      winVoice = true;
+      $("recBtn").disabled = false;
+      $("autoCommit").checked = true;
+      setRecUI("idle");
       const n = $("dictNotice"); n.hidden = false;
-      n.textContent = "這個視窗無法使用語音收音。請在 Chrome／Edge 開啟此頁（或 Claude 桌面版主視窗），並以公司帳號登入。也可以先用手動輸入或匯入逐字稿。";
+      n.innerHTML = `<details><summary style="cursor:pointer">這個視窗使用 Chrome 語音辨識收音・<u>說明</u></summary>
+        <div style="margin-top:6px">按「開始錄音」會用 Chrome 內建的語音辨識（聲音會送到 Google 辨識）。第一次會詢問麥克風權限，請按「允許」。<br>
+        如果狀態顯示「被擋」，改點下方輸入框後按 <b>Windows 鍵 + H</b> 用 Windows 語音輸入，說話停頓 2 秒會自動加入逐字稿。<br>
+        第一次使用若沒有反應：Windows 設定 → 時間與語言 → 語音，確認語音輸入可用。</div>
+        <div class="row small" style="margin-top:6px"><span class="mono" id="diagTx">診斷中…</span><button class="btn" type="button" id="permBtn">開啟此頁權限設定</button></div></details>`;
+      (async () => {
+        let st = "無法讀取";
+        try { const perm = window.claude?.use ? await claude.use("permissions") : null; if (perm) st = await perm.state("dictation"); $("permBtn").onclick = () => perm ? perm.manage().catch(() => { $("diagTx").textContent += "（請改用頁面右上角的權限選單）"; }) : null; } catch (_) {}
+        $("diagTx").textContent = `診斷：語音權限=${st}・瀏覽器語言=${navigator.language}・Chrome語音=${SR ? "有" : "無"}・麥克風政策=${document.featurePolicy ? (document.featurePolicy.allowsFeature("microphone") ? "允許" : "不允許") : "未知"}・網址參數=${location.search ? "有" : "無"}`;
+      })();
       return;
     }
-    dict.onPartial(({ text }) => { partialText = text; renderTranscript(); });
-    dict.onFinal(({ text }) => { partialText = ""; addText(text); });
+    dict.onPartial(({ text }) => { partialText = toTW(text); renderTranscript(); });
+    dict.onFinal(({ text }) => { partialText = ""; addText(toTW(text)); });
     dict.onState(({ state, reason }) => {
       setRecUI(state, reason);
       if (state === "idle" && reason === "unavailable" && useLang) { useLang = false; $("recState").textContent = "已改用預設語言，請再按一次開始錄音"; }
     });
   }
   $("recBtn").onclick = () => {
-    if (!dict) return;
+    if (!dict) {
+      if (!winVoice) { $("recState").textContent = "正在連線語音服務，請等 2–3 秒再按一次。"; return; }
+      if (recording) { wsrStop(); setRecUI("idle"); renderTranscript(); return; }
+      setRecUI("listening");
+      if (!wsrBlocked) { $("recState").textContent = "啟動麥克風中…"; wsrStart(); return; }
+      $("recState").innerHTML = `<b>還沒在收音</b>：請按鍵盤 <b>Windows 鍵 + H</b>`;
+      setTimeout(() => $("manualIn").focus(), 0);
+      return;
+    }
     if (dict.active()) { dict.stop().catch(() => {}); return; }
     dict.start(useLang ? { language: "zh-TW" } : undefined).catch((e) => {
       if (e?.code === "unavailable" && useLang) { useLang = false; $("recState").textContent = "已改用預設語言，請再按一次開始錄音"; return; }
       if (e?.code === "not_granted") { $("recState").textContent = "麥克風未授權。可在此頁的「權限」選單開啟。"; return; }
       if (e?.code !== "stopped") $("recState").textContent = "無法開始錄音：" + (e?.code || "");
     });
+  };
+
+  // ---------- 錄音檔 → 會議紀錄：呼叫這台電腦上的本機轉錄服務（只在 Claude 桌面版可用） ----------
+  const HOST = "host:xiaoyi_transcriber";
+  let fileList = [], fileJob = null;
+  async function callHost(tool, input) { if (!mcp) throw { code: "capability_disabled" }; const r = await mcp.callTool(HOST, tool, input); const p = r.payload ?? r; if (p?.error) throw { code: "tool_error", message: p.error }; return p; }
+  const hostMsg = (e) => {
+    if (e?.code === "server_not_connected" || e?.code === "capability_disabled" || e?.code === "not_granted") return "連不到本機轉錄服務。請用 Claude 桌面版開啟此頁；若已在桌面版，請完全結束桌面版後重新開啟。";
+    if (e?.code === "cancelled") return "已取消這次操作。";
+    if (e?.code === "not_in_manifest" || e?.code === "approval_required") return "尚未允許此頁使用本機轉錄服務，請在提示中按「允許」。";
+    return "本機轉錄服務錯誤：" + String(e?.message || e?.code || "未知錯誤").slice(0, 200);
+  };
+  async function setupFileBox() {
+    const st = $("fileState");
+    let ok = false;
+    try { const l = mcp ? await mcp.listTools(HOST) : null; ok = !!l?.servers?.some((s) => s.server === HOST && (s.tools || []).length); } catch (_) {}
+    if (!ok) {
+      st.innerHTML = `這台電腦的本機轉錄只能在 <b>Claude 桌面版</b>使用。用 Chrome 開啟時，請把錄音檔拖到桌面「小議轉錄」資料夾裡的「拖曳錄音檔到這裡轉文字.bat」，再到下方「匯入逐字稿檔案」選擇產生的 .vtt。`;
+      return;
+    }
+    st.textContent = "本機轉錄服務已連線。"; $("fileUI").hidden = false;
+    $("fileNewDraft").checked = S.lines.length > 0;
+    loadFiles();
+  }
+  async function loadFiles() {
+    const sel = $("fileSel"); sel.innerHTML = `<option>讀取中…</option>`;
+    try {
+      const p = await callHost("list_audio_files", {});
+      fileList = p?.files || [];
+      sel.innerHTML = fileList.length ? fileList.map((f, i) => `<option value="${i}">${esc(f.name)}・${esc(f.folder)}・${f.size_mb} MB・${esc(f.modified)}${f.has_transcript ? "・已有逐字稿" : ""}</option>`).join("") : `<option value="">找不到錄音檔：請放到桌面「小議轉錄\\錄音檔」、下載或桌面資料夾</option>`;
+      $("fileGo").disabled = !fileList.length;
+    } catch (e) { sel.innerHTML = `<option value="">讀取失敗</option>`; $("fileProg").textContent = hostMsg(e); }
+  }
+  $("fileRefresh").onclick = loadFiles;
+  $("fileStop").onclick = () => { if (fileJob) fileJob.stopped = true; };
+  $("fileGo").onclick = async () => {
+    const f = fileList[Number($("fileSel").value)]; if (!f || fileJob) return;
+    const prog = $("fileProg"), go = $("fileGo"), stop = $("fileStop");
+    // 先決定逐字稿要放進哪一場會議；轉錄期間切換會議也不會放錯
+    if ($("fileNewDraft").checked) {
+      $("draftNew").click();
+      S.meta.date = /^\d{4}-\d{2}-\d{2}/.test(f.modified) ? f.modified.slice(0, 10) : S.meta.date;
+      S.meta.name = S.meta.type === "例行會議" ? defaultName(S.meta.date) : f.name.replace(/\.[^.]+$/, "");
+      persist(); renderMeta(); renderDrafts();
+    }
+    const target = curId, autoGen = $("fileAutoGen").checked;
+    fileJob = { stopped: false }; go.disabled = true; stop.hidden = false;
+    try {
+      prog.textContent = "開始轉錄…";
+      const { job_id } = await callHost("start_transcription", { path: f.path });
+      let st;
+      while (true) {
+        if (fileJob.stopped) { prog.textContent = "已停止等待。轉錄仍在背景進行，完成後會存成同名 .vtt，下次選同一個檔案會直接沿用。"; return; }
+        st = await callHost("transcription_status", { job_id });
+        if (st.state === "done" || st.state === "error") break;
+        const label = { queued: "排隊中", loading_model: "載入語音模型", transcribing: "轉錄中" }[st.state] || st.state;
+        const mm = (s) => `${pad(Math.floor(s / 60))}:${pad(Math.floor(s % 60))}`;
+        prog.textContent = st.duration ? `${label} ${st.percent}%（錄音 ${mm(st.done_seconds)} / ${mm(st.duration)}，已用 ${mm(st.elapsed)}）` : `${label}…（已用 ${mm(st.elapsed)}）`;
+        await sleep(4000);
+      }
+      if (st.state === "error") { prog.textContent = "轉錄失敗：" + (st.error || ""); return; }
+      const { vtt } = await callHost("get_transcript", { job_id });
+      if (curId !== target) loadDraft(target);
+      const rows = parseTranscript(toTW(vtt));
+      S.lines.push(...rows); persist(); renderTranscript(); renderDrafts();
+      prog.textContent = `${st.reused ? "沿用既有逐字稿" : "轉錄完成"}，加入 ${rows.length} 段。`;
+      if (autoGen && rows.length) { show("review"); generate(); }
+    } catch (e) { prog.textContent = hostMsg(e); }
+    finally { fileJob = null; go.disabled = false; stop.hidden = true; }
+  };
+
+  // ---------- source: room vs online (Claude Meetings) ----------
+  const MEET = "Meetings";
+  let mtgFollowing = false, mtgCursor = null, mtgList = [];
+  function setSource(online) {
+    $("srcRoom").setAttribute("aria-pressed", String(!online)); $("srcOnline").setAttribute("aria-pressed", String(online));
+    $("onlinePanel").hidden = !online; $("roomBar").querySelector("#recBtn").hidden = online;
+    $("timer").hidden = online; $("recState").hidden = online; $("speakers").hidden = online;
+    $("dictNotice").hidden = online || !!dict || !ready.dict;
+    if (online && dict?.active()) dict.stop().catch(() => {});
+    if (!online) stopFollow();
+  }
+  $("srcRoom").onclick = () => setSource(false);
+  $("srcOnline").onclick = () => setSource(true);
+  const mtgErr = (e) => mcpMsg(e).replace(/monday\.com|monday/g, "Claude 會議記錄（Meetings）");
+  async function callMeet(tool, input) { if (!mcp) throw { code: "capability_disabled" }; const r = await mcp.callTool(MEET, tool, input); return r.payload ?? r; }
+  $("mtgLoad").onclick = async () => {
+    const b = $("mtgLoad"); b.disabled = true; $("mtgState").textContent = "讀取中…";
+    try {
+      const since = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
+      const p = await callMeet("list_meetings", { limit: 20, since });
+      mtgList = (p?.meetings || []).map((m) => ({ id: m.project_uuid || m.uuid || m.id, title: m.title || m.name || "（未命名會議）", when: m.last_met_at || m.last_session_at || m.updated_at || m.started_at || "", live: !!(m.is_live || m.live) })).filter((m) => m.id);
+      const sel = $("mtgSel"); sel.textContent = "";
+      if (!mtgList.length) { sel.innerHTML = `<option value="">近兩週沒有 Claude 參加的會議</option>`; $("mtgState").textContent = "先在 claude.ai 把 Claude 派進會議，再按一次讀取。"; }
+      else { mtgList.forEach((m) => { const o = document.createElement("option"); o.value = m.id; o.textContent = `${m.live ? "🔴 進行中・" : ""}${m.title}${m.when ? "（" + String(m.when).slice(0, 16).replace("T", " ") + "）" : ""}`; sel.append(o); }); $("mtgState").textContent = ""; }
+      $("mtgFollow").disabled = $("mtgImport").disabled = !mtgList.length;
+    } catch (e) { $("mtgState").textContent = mtgErr(e); }
+    finally { b.disabled = false; }
+  };
+  $("mtgSel").onchange = () => { stopFollow(); mtgCursor = null; const m = mtgList.find((x) => x.id === $("mtgSel").value); if (m && S.meta.name.endsWith("週會") && !S.lines.length) { S.meta.name = m.title; save(); renderMeta(); } };
+  function addMeetLine(ev) {
+    if (ev.is_bot || !ev.text) return;
+    const room = ev.speaker_is_room || /^(room|unknown)$/i.test(ev.speaker || "");
+    const p = room ? null : matchPerson(ev.speaker);
+    const t = ev.t ? new Date(ev.t).toTimeString().slice(0, 8) : clock();
+    const name = room ? "未辨識" : (ev.speaker || "其他");
+    const last = S.lines[S.lines.length - 1];
+    if (last && last.src === "meet" && (last.who || null) === (p?.key || null) && (last.name || null) === (p ? null : name) && last.text.length < 320) last.text += (ev.kind === "chat" ? "（聊天）" : "") + ev.text;
+    else S.lines.push({ t, who: p ? p.key : null, name: p ? undefined : name, text: (ev.kind === "chat" ? "（聊天）" : "") + ev.text, src: "meet", wake: WAKE.test(ev.text) || undefined });
+    handleWake(ev.text);
+  }
+  function stopFollow() { mtgFollowing = false; $("mtgFollow").textContent = "開始同步"; }
+  $("mtgFollow").onclick = async () => {
+    if (mtgFollowing) { stopFollow(); $("mtgState").textContent = "已停止同步"; return; }
+    const id = $("mtgSel").value; if (!id) return;
+    mtgFollowing = true; $("mtgFollow").textContent = "停止同步"; $("mtgState").textContent = "連線中…";
+    while (mtgFollowing) {
+      try {
+        const a = { project_uuid: id, wait: 12, max_events: 500 }; if (mtgCursor) a.cursor = mtgCursor;
+        const p = await callMeet("follow_meeting_transcript", a);
+        if (!mtgFollowing) break;
+        let n = 0;
+        (p?.events || []).forEach((ev) => { if (ev.type === "line") { addMeetLine(ev); n++; } else if (ev.type === "reset") { mtgCursor = null; } });
+        if (p?.cursor) mtgCursor = p.cursor;
+        if (n) { save(); renderTranscript(); }
+        if (p?.state && p.state !== "live") { $("mtgState").textContent = "會議未進行中（Claude 尚未加入或已結束）。結束的會議請用「匯入完整逐字稿」。"; stopFollow(); break; }
+        $("mtgState").textContent = "同步中・" + clock();
+        if (!p?.has_more) await new Promise((r) => setTimeout(r, 3000));
+      } catch (e) {
+        $("mtgState").textContent = mtgErr(e);
+        if (e?.retryable) { await new Promise((r) => setTimeout(r, Math.min(e.retryAfterMs || 8000, 30000))); continue; }
+        stopFollow(); break;
+      }
+    }
+  };
+  $("mtgImport").onclick = async () => {
+    const id = $("mtgSel").value; if (!id) return;
+    const b = $("mtgImport"); b.disabled = true; stopFollow();
+    let offset = 0, added = 0;
+    try {
+      for (let page = 0; page < 20; page++) {
+        $("mtgState").textContent = `匯入中…（第 ${page + 1} 頁）`;
+        const p = await callMeet("get_meeting_transcript", { project_uuid: id, format: "markdown", max_chars: 50000, offset });
+        if (p?.no_transcript) { $("mtgState").textContent = "這場會議的紀錄沒有保留逐字稿。"; return; }
+        let rows = [];
+        if (Array.isArray(p?.lines)) rows = p.lines.map((l) => typeof l === "string" ? parseTranscript(l)[0] : (() => { const pp = matchPerson(l.speaker); return { t: l.t ? String(l.t).slice(11, 19) || "匯入" : "匯入", who: pp ? pp.key : null, name: pp ? undefined : (l.speaker || undefined), text: String(l.text || "") }; })()).filter((r) => r && r.text);
+        else { const txt = typeof p === "string" ? p : (p?.markdown || p?.text || p?.transcript || ""); rows = parseTranscript(String(txt).replace(/\*\*([^*]+)\*\*/g, "$1")); }
+        S.lines.push(...rows); added += rows.length;
+        const next = p?.next_offset, total = p?.total_lines ?? p?.total_chars;
+        if (next == null || next === offset || (total != null && next >= total)) break;
+        offset = next;
+      }
+      save(); renderTranscript();
+      $("mtgState").textContent = `已匯入 ${added} 段逐字稿。`;
+    } catch (e) { $("mtgState").textContent = mtgErr(e); }
+    finally { b.disabled = false; }
   };
 
   // ---------- wake word + Q&A ----------
@@ -545,7 +1088,7 @@ table.todos .quote { font-size: 12px; color: var(--muted); margin-top: 4px; }
     if (!sample) { st.className = "err"; st.textContent = ready.sample ? "此處無法使用 Claude 分析（請在 claude.ai 開啟此頁）。" : "仍在連線，請稍候再問。"; stop.remove(); return; }
     const ctl = new AbortController(); stop.onclick = () => ctl.abort();
     noteEl = st;
-    const ctx = S.lines.slice(-40).map((l) => `[${l.t}] ${shortOf(l.who)}：${l.text}`).join("\n");
+    const ctx = S.lines.slice(-40).map((l) => `[${l.t}] ${nameOf(l)}：${l.text}`).join("\n");
     const prompt = `你是「小議」，研發文管課${S.meta.type}的會議助理。與會者在會議中問了你一個問題。請先用工具查 monday.com 的資料，再回答。
 
 規則：
@@ -571,46 +1114,173 @@ ${ctx || "（尚無）"}
   }
 
   // ---------- previous meeting ----------
-  $("prevBtn").onclick = async () => {
-    const body = $("prevBody"); const btn = $("prevBtn"); btn.disabled = true;
-    body.innerHTML = `<div class="small muted">讀取會議紀錄板…</div>`;
+  // 自己選要追蹤哪一場；只列子項目中還沒「已完成」的待辦
+  let prevItems = null, prevSel = null;
+  const cvText = (v) => (v == null ? "" : typeof v === "string" ? v : (v.text ?? v.label ?? (v.to ? `${v.from || ""}～${v.to}` : JSON.stringify(v))));
+  function renderPrevPicker() {
+    const box = $("prevPick"); if (!box) return;
+    if (!prevItems) { box.innerHTML = `<button class="btn" type="button" id="prevLoad">載入會議清單</button>`; $("prevLoad").onclick = loadPrevList; return; }
+    if (!prevItems.length) { box.innerHTML = `<div class="small muted">會議紀錄板上沒有找到會議。</div>`; return; }
+    if (!prevSel || !prevItems.some((x) => x.id === prevSel)) {
+      const same = prevItems.find((x) => x.type === S.meta.type && x.date && x.date < S.meta.date);
+      prevSel = (same || prevItems[0]).id;
+    }
+    box.innerHTML = `<select class="inp" id="prevSel" aria-label="選擇要追蹤的會議">${prevItems.map((x) => `<option value="${esc(x.id)}" ${x.id === prevSel ? "selected" : ""}>${esc(x.name)}${x.date ? "（" + esc(x.date) + "）" : ""}</option>`).join("")}</select>
+      <div class="row"><button class="btn primary" type="button" id="prevRead">讀取未完成待辦</button><button class="btn ghost" type="button" id="prevReload">重新整理清單</button></div>`;
+    $("prevSel").onchange = () => { prevSel = $("prevSel").value; };
+    $("prevRead").onclick = () => readPrev(prevSel);
+    $("prevReload").onclick = loadPrevList;
+  }
+  async function loadPrevList() {
+    $("prevPick").innerHTML = `<div class="small muted">讀取會議紀錄板…</div>`;
     try {
-      const p = await callMonday("get_board_items_page", { boardId: BOARD, includeColumns: true, columnIds: [COL.date, COL.type, COL.doc], limit: 15, orderBy: [{ columnId: COL.date, direction: "desc" }] });
-      const items = (p?.items || []).filter((it) => {
-        const cv = it.column_values || {};
-        return cv[COL.type] === S.meta.type && cv[COL.date] && cv[COL.date] < S.meta.date && cv[COL.doc]?.files?.length;
-      });
-      if (!items.length) { body.innerHTML = `<div class="small muted">找不到 ${esc(S.meta.date)} 之前同類型、且有紀錄文件的會議。</div>`; return; }
-      const it = items[0]; const objId = it.column_values[COL.doc].files[0].objectId;
-      body.innerHTML = `<div class="small muted">讀取「${esc(it.name)}」紀錄…</div>`;
-      const d = await callMonday("read_docs", { type: "object_ids", ids: [String(objId)] });
+      const p = await callMonday("get_board_items_page", { boardId: BOARD, includeColumns: true, columnIds: [COL.date, COL.type, COL.doc], limit: 40, orderBy: [{ columnId: COL.date, direction: "desc" }] });
+      prevItems = (p?.items || []).map((it) => ({ id: String(it.id), name: it.name, url: it.url, date: it.column_values?.[COL.date] || "", type: it.column_values?.[COL.type] || "", docObj: it.column_values?.[COL.doc]?.files?.[0]?.objectId || null }));
+    } catch (e) { $("prevPick").innerHTML = `<div class="notice err">${esc(mcpMsg(e))}</div><button class="btn" type="button" id="prevLoad">再試一次</button>`; $("prevLoad").onclick = loadPrevList; return; }
+    renderPrevPicker();
+  }
+  async function readPrev(id) {
+    const it = prevItems.find((x) => x.id === id); if (!it) return;
+    const body = $("prevBody"); const btn = $("prevRead"); if (btn) btn.disabled = true;
+    body.innerHTML = `<div class="small muted">讀取「${esc(it.name)}」的子項目…</div>`;
+    try {
+      const p = await callMonday("get_board_items_page", { boardId: BOARD, itemIds: [Number(id)], includeColumns: true, includeSubItems: true, subItemLimit: 100 });
+      const subs = p?.items?.[0]?.subitems || [];
+      const isDone = (s) => /已完成|done/i.test(cvText(s.column_values?.[SUBCOL.status]));
+      const open = subs.filter((s) => !isDone(s)), done = subs.filter(isDone);
+      const head = `<div class="small"><a href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.name)}</a>${it.date ? " · " + esc(it.date) : ""}・子項目 ${subs.length} 筆，已完成 ${done.length} 筆</div>`;
+      const list = open.length ? `<ul class="prevlist">${open.map((s, i) => {
+        const cv = s.column_values || {};
+        const meta = [cvText(cv[SUBCOL.person]), cvText(cv[SUBCOL.status]) || "未設定狀態", cvText(cv[SUBCOL.timeline]) && "期限 " + cvText(cv[SUBCOL.timeline])].filter(Boolean).join("・");
+        return `<li><input type="checkbox" id="pv${i}" aria-label="本次已確認"><label for="pv${i}"><a href="${BASE}/boards/${SUB_BOARD}/pulses/${esc(s.id)}" target="_blank" rel="noopener">${esc(s.name)}</a><div class="meta2">${esc(meta)}</div></label></li>`;
+      }).join("")}</ul>` : `<div class="small muted">${subs.length ? "子項目待辦都已完成 🎉" : "這場會議沒有子項目待辦。"}</div>`;
+      body.innerHTML = head + list + (it.docObj ? `<button class="btn ghost" type="button" id="prevDoc">從會議紀錄內容找其他追蹤事項</button><div id="prevDocOut"></div>` : "");
+      const pd = $("prevDoc"); if (pd) pd.onclick = () => prevFromDoc(it, done.map((s) => s.name), open.map((s) => s.name));
+      if (!subs.length && it.docObj) prevFromDoc(it, [], []);
+    } catch (e) { body.innerHTML = `<div class="notice err">${esc(mcpMsg(e))}</div>`; }
+    finally { if (btn) btn.disabled = false; }
+  }
+  async function prevFromDoc(it, doneNames, openNames) {
+    const out = $("prevDocOut"); if (!out) return;
+    const pd = $("prevDoc"); if (pd) pd.hidden = true;
+    if (!sample) { out.innerHTML = `<div class="small muted">此處無法使用 Claude 整理。</div>`; return; }
+    out.innerHTML = `<div class="small muted">整理會議紀錄中的追蹤事項…</div>`;
+    try {
+      const d = await callMonday("read_docs", { type: "object_ids", ids: [String(it.docObj)] });
       const md = d?.data?.[0]?.blocks_as_markdown || "";
-      if (!md.trim()) { body.innerHTML = `<div class="small muted">「${esc(it.name)}」的紀錄文件是空的。</div>`; return; }
-      if (!sample) { body.innerHTML = `<div class="small"><a href="${esc(it.url)}" target="_blank" rel="noopener">開啟「${esc(it.name)}」</a>（此處無法自動整理）</div>`; return; }
-      body.innerHTML = `<div class="small muted">整理追蹤事項…</div>`;
-      const list = await sample.json(`以下是上次會議「${it.name}」的紀錄。請列出本次會議開場需要追蹤確認的事項（有期限、承諾要做、持續追蹤中的工作），每人最多 3 項，每項 30 字內。
-人名請用：${TEAM.map((t) => t.short).join("、")}。
+      if (!md.trim()) { out.innerHTML = `<div class="small muted">紀錄文件是空的。</div>`; return; }
+      const list = await sample.json(`以下是會議「${it.name}」的紀錄。請列出下次會議開場需要追蹤確認的事項（有期限、承諾要做、持續追蹤中的工作），每人最多 3 項，每項 30 字內。
+以下事項已在子項目中「已完成」，不要列出：${doneNames.join("；") || "（無）"}
+以下事項已列在子項目中，也不要重複列出：${openNames.join("；") || "（無）"}
 只回覆 JSON 陣列：[{"who":"詩涵","item":"KM 客製功能 10/30 交付測試"}]
 
 紀錄：
 ${md.slice(0, 20000)}`, { modelTier: "quick", cache: { gcTime: 3600000 } });
       const arr = Array.isArray(list) ? list : [];
-      body.innerHTML = `<div class="small"><a href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.name)}</a> · ${esc(it.column_values[COL.date])}</div>` +
-        (arr.length ? `<ul class="prevlist">${arr.map((x, i) => `<li><input type="checkbox" id="pv${i}" aria-label="已確認"><label for="pv${i}"><span class="who">${esc(x.who)}</span> ${esc(x.item)}</label></li>`).join("")}</ul>` : `<div class="small muted">上次紀錄中沒有找到需追蹤的事項。</div>`);
-    } catch (e) {
-      body.innerHTML = `<div class="notice err">${esc(e?.code && e.code in { invalid_json: 1, rate_limited: 1, not_granted: 1, refused: 1 } ? sampleMsg(e) : mcpMsg(e))}</div>`;
-    } finally { btn.disabled = false; btn.textContent = "重新載入"; }
-  };
+      out.innerHTML = arr.length ? `<div class="small muted" style="margin-top:6px">紀錄內容中的其他追蹤事項</div><ul class="prevlist">${arr.map((x, i) => `<li><input type="checkbox" id="pd${i}" aria-label="本次已確認"><label for="pd${i}"><span class="who">${esc(x.who)}</span> ${esc(x.item)}</label></li>`).join("")}</ul>` : `<div class="small muted">紀錄內容中沒有其他需追蹤的事項。</div>`;
+    } catch (e) { out.innerHTML = `<div class="notice err">${esc(e?.code && ["invalid_json", "rate_limited", "not_granted", "refused"].includes(e.code) ? sampleMsg(e) : mcpMsg(e))}</div>`; }
+  }
 
   // ---------- views ----------
-  function show(view) {
-    $("viewLive").hidden = view !== "live"; $("viewReview").hidden = view !== "review";
-    $("tabLive").setAttribute("aria-pressed", String(view === "live")); $("tabReview").setAttribute("aria-pressed", String(view === "review"));
-    if (view === "review") renderReview();
+  // 版面：左欄逐字稿、右欄分頁（會議紀錄／問小議／上次追蹤）同時顯示
+  function selectTab(name) {
+    document.querySelectorAll(".tabs [data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
+    document.querySelectorAll("[data-tabpane]").forEach((p) => { p.hidden = p.dataset.tabpane !== name; });
   }
-  $("tabLive").onclick = () => show("live");
-  $("tabReview").onclick = () => show("review");
-  $("endBtn").onclick = () => { if (dict?.active()) dict.stop().catch(() => {}); show("review"); if (!S.review && S.lines.length) generate(); };
+  document.querySelectorAll(".tabs [data-tab]").forEach((b) => { b.onclick = () => selectTab(b.dataset.tab); });
+  function show(view) { selectTab(view === "review" ? "notes" : "transcript"); renderReview(); }
+  const toggle = (btn, el) => { el.hidden = !el.hidden; btn.setAttribute("aria-expanded", String(!el.hidden)); };
+  ["draftClear", "draftDel"].forEach((id) => $(id).addEventListener("click", () => { if (!$(id).classList.contains("danger")) $(id).closest("details").open = false; }));
+  $("goAsk").onclick = () => selectTab("ask");
+  $("recBtn").addEventListener("click", () => selectTab("transcript"));
+  $("writeOpen").onclick = () => { $("writeDrawer").hidden = false; renderWrite(); };
+  $("writeClose").onclick = () => { $("writeDrawer").hidden = true; };
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("writeDrawer").hidden = true; });
+
+  // 心智圖：中心是會議主題，左右展開各段落（### 標題）→ 人／議題（粗體行）→ 條列
+  let notesView = "text";
+  try { notesView = localStorage.getItem("xiaoyi-notes-view") || "text"; } catch (_) {}
+  let mmScale = 1;
+  function mindTree(R) {
+    const root = { t: S.meta.name || "會議", kids: [] };
+    let sec = null, grp = null;
+    const clean = (s) => s.replace(/\*\*/g, "").replace(/^[-*•]\s+/, "").trim();
+    String(R.md || "").split(/\r?\n/).forEach((raw) => {
+      const l = raw.trim(); if (!l) return;
+      if (/^#{1,6}\s/.test(l)) { sec = { t: clean(l.replace(/^#+\s*/, "")), kids: [] }; root.kids.push(sec); grp = null; return; }
+      if (!sec) { sec = { t: "內容", kids: [] }; root.kids.push(sec); }
+      if (/^\*\*[^*]+\*\*$/.test(l)) { grp = { t: clean(l), kids: [] }; sec.kids.push(grp); return; }
+      (grp || sec).kids.push({ t: clean(l), kids: [] });
+    });
+    const todos = R.todos.filter((t) => t.keep && t.task.trim());
+    if (todos.length) root.kids.push({ t: "📝 待辦事項", kids: todos.map((t) => ({ t: `${t.task}｜${t.owner ? shortOf(t.owner) : (t.ownerName || "未指定")}${t.due ? "｜" + t.due.slice(5).replace("-", "/") : ""}`, kids: [] })) });
+    const open = String(R.open || "").split(/\r?\n/).map((s) => clean(s)).filter(Boolean);
+    if (open.length) root.kids.push({ t: "❓ 待確認問題", kids: open.map((t) => ({ t, kids: [] })) });
+    return root;
+  }
+  function wrapText(s, n, max) {
+    const out = []; let cur = "";
+    for (const ch of Array.from(s)) { cur += ch; if (cur.length >= n) { out.push(cur); cur = ""; } }
+    if (cur) out.push(cur);
+    if (out.length > max) { out.length = max; out[max - 1] = out[max - 1].slice(0, -1) + "…"; }
+    return out;
+  }
+  function renderMind(R) {
+    const root = mindTree(R);
+    const W = [0, 200, 190, 230], CH = [0, 13, 15, 18], LH = 17, GAP = 10;
+    const colors = ["--c1", "--c2", "--c3", "--c4", "--c5", "--c6", "--c7"];
+    const lay = (n, depth) => { n.lines = wrapText(n.t, CH[depth] || 18, depth >= 3 ? 3 : 4); n.h = n.lines.length * LH + 6; n.kids.forEach((k) => lay(k, depth + 1)); n.sh = Math.max(n.h, n.kids.reduce((s, k) => s + k.sh, 0) + GAP * Math.max(0, n.kids.length - 1)); };
+    root.kids.forEach((k) => lay(k, 1));
+    const right = [], left = []; let rh = 0, lh = 0;
+    root.kids.forEach((k, i) => { k.color = colors[i % colors.length]; if (rh <= lh) { right.push(k); rh += k.sh + GAP * 2; } else { left.push(k); lh += k.sh + GAP * 2; } });
+    const parts = [], X0 = 90;
+    let bx0 = 0, bx1 = 0; // 實際內容的左右邊界
+    const place = (n, depth, side, x, yTop, px, py, color) => {
+      const y = yTop + n.sh / 2;
+      const nx = x;
+      // 連線
+      const sx = side > 0 ? px : px, ex = side > 0 ? nx - 6 : nx + 6;
+      parts.push(`<path d="M${sx},${py} C${(sx + ex) / 2},${py} ${(sx + ex) / 2},${y} ${ex},${y}" fill="none" stroke="var(${color})" stroke-width="${depth === 1 ? 2 : 1.3}" opacity=".8"/>`);
+      const anchor = side > 0 ? "start" : "end";
+      if (depth === 1) {
+        const w = Math.max(...n.lines.map((l) => Array.from(l).length)) * 14 + 22, bx = side > 0 ? nx : nx - w;
+        parts.push(`<rect x="${bx}" y="${y - n.h / 2 - 3}" width="${w}" height="${n.h + 6}" rx="7" fill="var(--surface)" stroke="var(${color})" stroke-width="1.5"/>`);
+        n.lines.forEach((l, i) => parts.push(`<text x="${side > 0 ? bx + 11 : bx + w - 11}" y="${y - n.h / 2 + 15 + i * LH}" text-anchor="${anchor}" font-size="13.5" font-weight="700" fill="var(--ink)">${esc(l)}</text>`));
+      } else {
+        n.lines.forEach((l, i) => parts.push(`<text x="${nx}" y="${y - n.h / 2 + 14 + i * LH}" text-anchor="${anchor}" font-size="${depth === 2 ? 13 : 12}" font-weight="${depth === 2 && n.kids.length ? 700 : 400}" fill="var(${depth === 2 && n.kids.length ? "--ink" : "--muted"})">${esc(l)}</text>`));
+      }
+      const textW = depth === 1 ? Math.max(...n.lines.map((l) => Array.from(l).length)) * 14 + 22 : Math.max(...n.lines.map((l) => Array.from(l).length)) * (depth === 2 ? 13 : 12);
+      const outX = side > 0 ? nx + textW + 6 : nx - textW - 6;
+      if (side > 0) bx1 = Math.max(bx1, outX); else bx0 = Math.min(bx0, outX);
+      let cy = yTop + (n.sh - (n.kids.reduce((s, k) => s + k.sh, 0) + GAP * Math.max(0, n.kids.length - 1))) / 2;
+      n.kids.forEach((k) => { place(k, depth + 1, side, side > 0 ? outX + 28 : outX - 28, cy, outX, y, color); cy += k.sh + GAP; });
+    };
+    const totalR = right.reduce((s, k) => s + k.sh, 0) + GAP * 2 * Math.max(0, right.length - 1);
+    const totalL = left.reduce((s, k) => s + k.sh, 0) + GAP * 2 * Math.max(0, left.length - 1);
+    const H = Math.max(totalR, totalL, 60) + 40;
+    const rootLines = wrapText(root.t, 12, 2), rootW = Math.max(...rootLines.map((l) => Array.from(l).length)) * 16 + 28, rootH = rootLines.length * 20 + 16;
+    let y = (H - totalR) / 2;
+    right.forEach((k) => { place(k, 1, 1, rootW / 2 + X0, y, rootW / 2, H / 2, k.color); y += k.sh + GAP * 2; });
+    y = (H - totalL) / 2;
+    left.forEach((k) => { place(k, 1, -1, -rootW / 2 - X0, y, -rootW / 2, H / 2, k.color); y += k.sh + GAP * 2; });
+    parts.push(`<rect x="${-rootW / 2}" y="${H / 2 - rootH / 2}" width="${rootW}" height="${rootH}" rx="10" fill="var(--accent)"/>`);
+    rootLines.forEach((l, i) => parts.push(`<text x="0" y="${H / 2 - rootH / 2 + 23 + i * 20}" text-anchor="middle" font-size="15" font-weight="700" fill="var(--accent-ink)">${esc(l)}</text>`));
+    const minX = Math.min(bx0, -rootW / 2) - 24, maxX = Math.max(bx1, rootW / 2) + 24;
+    // 預設符合版面寬度；放大縮小時改用實際尺寸
+    const size = mmScale === 1 ? `width="100%"` : `width="${(maxX - minX) * mmScale}" height="${H * mmScale}"`;
+    return `<svg viewBox="${minX} 0 ${maxX - minX} ${H}" ${size} role="img" aria-label="會議紀錄心智圖">${parts.join("")}</svg>`;
+  }
+  // 逐字稿來源：再按一次同一顆就收起
+  document.querySelectorAll(".importbig [data-src]").forEach((b) => {
+    b.onclick = () => {
+      const open = b.getAttribute("aria-pressed") !== "true";
+      document.querySelectorAll(".importbig [data-src]").forEach((x) => x.setAttribute("aria-pressed", String(open && x === b)));
+      document.querySelectorAll("#srcPanel > [data-pane]").forEach((p) => { p.hidden = !open || p.dataset.pane !== b.dataset.src; });
+      $("srcPanel").hidden = !open;
+      if (open && b.dataset.src === "import") $("importTx").focus();
+    };
+  });
+  $("endBtn").onclick = () => { if (dict?.active()) dict.stop().catch(() => {}); if (winVoice && recording) { wsrStop(); setRecUI("idle"); } show("review"); if (!S.review && S.lines.length) generate(); };
 
   // ---------- generate summary ----------
   let genCtl = null;
@@ -621,53 +1291,115 @@ ${md.slice(0, 20000)}`, { modelTier: "quick", cache: { gcTime: 3600000 } });
     genCtl = new AbortController();
     main.innerHTML = `<div class="gen"><h2>小議正在整理會議紀錄…</h2><div class="small muted" id="genSt">分析 ${S.lines.length} 段逐字稿，約需 30–90 秒。</div><button class="btn" id="genStop">停止</button></div>`;
     $("genStop").onclick = () => genCtl.abort();
-    const tx = S.lines.map((l) => `[${l.t}] ${shortOf(l.who)}：${l.text}`).join("\n");
-    const att = TEAM.filter((p) => S.present.includes(p.id)).map((p) => `${p.id}=${p.short}`).join("、");
+    const tx = S.lines.map((l) => `[${l.t}] ${nameOf(l)}：${l.text}`).join("\n");
+    const ppl = presentPeople();
+    const att = ppl.map((p) => `${p.key}=${p.short}${p.id ? "（monday：" + p.name + "）" : ""}${p.unit ? "（" + p.unit + "）" : ""}`).join("、") || "（未設定）";
     const dow = "日一二三四五六"[new Date(S.meta.date + "T00:00:00").getDay()];
-    const prompt = `你是研發文管課的會議記錄員。把以下「${S.meta.name}」的逐字稿整理成正式會議紀錄的資料。
+    const weekly = S.meta.type === "例行會議";
+    const shape = weekly
+      ? `{"progress":[{"person":"俞安","points":[{"title":"法務審核進度","detail":"送審文件法務尚未回信，持續追蹤。"}]}],
+ "announcements":[{"title":"AI 課程心得反饋","detail":"請全體同仁今日下班前於留言區提供回饋。"}],`
+      : `{"topics":[{"title":"議題名稱","points":["討論重點或各單位意見（標明單位或人）","本議題的結論"]}],`;
+    const rule = weekly
+      ? "- progress 依與會者分組，每人列出他報告的工作項目；title 是工作名稱，detail 用精簡書面語寫現況與下一步，每點 80 字內。"
+      : "- 這是跨單位／專案會議，依「議題」整理：topics 每個議題列 2–5 點，說明討論重點、各方意見（標明單位或人）與結論，每點 80 字內。";
+    const prompt = `你是會議記錄員。把以下「${S.meta.name}」（${S.meta.type}）的逐字稿整理成正式會議紀錄的資料。
 
-與會者（monday 使用者 id=簡稱）：${att}
+與會者（代號=名字（單位））：${att}
 今天：${S.meta.date}（週${dow}）
-逐字稿每行格式：[時間] 發言人：內容。發言人可能標錯或為「其他」，請依內容判斷誰在報告。語音辨識可能有錯字，請依上下文修正專有名詞。
+逐字稿每行格式：[時間] 發言人：內容。發言人可能是「其他」、「說話者 1」或標錯，請依內容判斷。語音辨識可能有錯字，請依上下文修正專有名詞。
 
 只回覆一個 JSON 物件，格式：
-{"progress":[{"person":"俞安","points":[{"title":"法務審核進度","detail":"送審文件法務尚未回信，持續追蹤。"}]}],
- "announcements":[{"title":"AI 課程心得反饋","detail":"請全體同仁今日下班前於留言區提供回饋。"}],
+${shape}
  "decisions":["決議內容"],
- "todos":[{"task":"彙整看板問題回饋給系統端","ownerId":79546935,"due":"2026-11-20","quote":"[10:12:03] 宜靖：我今天會把問題整理給他們"}],
- "openQuestions":["尚未有結論、需下次確認的事項"]}
+ "todos":[{"task":"彙整看板問題回饋給系統端","owner":"79546935","ownerName":"宜靖","due":"2026-11-20","quote":"[10:12:03] 宜靖：我今天會把問題整理給他們"}],
+ "openQuestions":["尚未有結論、需下次確認的事項"],
+ "uncertain":["「客製功能」交付日期是 10/30 還是 11/3？"]}
 
 規則：
-- progress 依與會者分組，每人列出他報告的工作項目；title 是工作名稱，detail 用精簡書面語寫現況與下一步。
+- uncertain 列出你整理時沒把握、需要記錄者確認的地方（負責人不明、日期聽不清、專有名詞可能聽錯、誰說的不確定），寫成可以直接回答的問題，最多 6 題；都有把握就給 []。
+- 一律使用繁體中文與台灣用語（逐字稿若有簡體字，請轉為繁體）。
+${rule}
 - 只寫逐字稿中出現的內容，不推測、不補充。
-- todos 只列有明確行動的事項。ownerId 用上面的 id，判斷不出填 null。due 把「明天」「週五」「下週三」換算成 YYYY-MM-DD，沒提到填 null。quote 摘錄原話並含時間。
+- todos 只列有明確行動的事項。owner 用上面的代號（等號左邊），負責人不在名單內時 owner 填 null、ownerName 寫他的名字或單位；完全判斷不出兩者都填 null。due 把「明天」「週五」「下週三」換算成 YYYY-MM-DD，沒提到填 null。quote 摘錄原話並含時間，60 字內。
 - 沒有內容的陣列給 []。
 
 逐字稿：
 ${tx}`;
     try {
       const data = await sample.json(prompt, { signal: genCtl.signal, cache: false, onText: ({ text }) => { const el = $("genSt"); if (el) el.textContent = `已產生 ${text.length} 字…`; } });
-      S.review = buildReview(data || {}); save(); renderReview();
+      if (!data || typeof data !== "object") throw { code: "invalid_json", message: "not an object" };
+      S.review = buildReview(data); save(); renderReview();
     } catch (e) {
-      main.innerHTML = `<div class="gen"><div class="notice err">${esc(sampleMsg(e))}</div><button class="btn primary" id="genRetry">重新整理</button></div>`;
+      main.innerHTML = `<div class="gen"><div class="notice err">${esc(sampleMsg(e))}<br><span class="small mono">錯誤代碼：${esc(e?.code || "unknown")}${e?.message ? "・" + esc(String(e.message).slice(0, 160)) : ""}</span></div><button class="btn primary" id="genRetry">重新整理</button></div>`;
       $("genRetry").onclick = generate;
     }
   }
   function buildReview(d) {
-    let md = "### 📌 本週工作進度匯報\n\n";
-    (d.progress || []).forEach((g) => {
-      md += `**👤 ${g.person || "（未標註）"}**\n\n`;
-      (g.points || []).forEach((p) => { md += `- **${p.title || "事項"}：** ${p.detail || ""}\n`; });
-      md += "\n";
-    });
+    let md = "";
+    if ((d.progress || []).length) {
+      md += "### 📌 本週工作進度匯報\n\n";
+      d.progress.forEach((g) => {
+        md += `**👤 ${g.person || "（未標註）"}**\n\n`;
+        (g.points || []).forEach((p) => { md += `- **${p.title || "事項"}：** ${p.detail || ""}\n`; });
+        md += "\n";
+      });
+    }
+    if ((d.topics || []).length) {
+      md += "### 📌 議題討論\n\n";
+      d.topics.forEach((tp, i) => {
+        md += `**${i + 1}. ${tp.title || "議題"}**\n\n`;
+        (tp.points || []).forEach((p) => { md += `- ${typeof p === "string" ? p : (p.title ? `**${p.title}：** ` : "") + (p.detail || "")}\n`; });
+        md += "\n";
+      });
+    }
     if ((d.announcements || []).length) {
       md += "### 📌 其他宣達與討論事項\n\n";
       d.announcements.forEach((a) => { md += `- **${a.title || "事項"}：** ${a.detail || ""}\n`; });
       md += "\n";
     }
     if ((d.decisions || []).length) { md += "### ✅ 決議事項\n\n"; d.decisions.forEach((x) => { md += `- ${x}\n`; }); md += "\n"; }
-    const todos = (d.todos || []).map((t) => ({ keep: true, task: String(t.task || ""), owner: TEAM.some((p) => p.id === Number(t.ownerId)) ? Number(t.ownerId) : null, due: /^\d{4}-\d{2}-\d{2}$/.test(t.due || "") ? t.due : "", quote: String(t.quote || "") }));
-    return { md: md.trim(), todos, open: (d.openQuestions || []).map((x) => "- " + x).join("\n"), target: "new", written: null };
+    const todos = (d.todos || []).map((t) => {
+      const k = t.owner != null ? String(t.owner) : (t.ownerId != null ? String(t.ownerId) : null);
+      const p = (k && person(k)) || (t.ownerName && matchPerson(t.ownerName)) || null;
+      return { keep: true, task: String(t.task || ""), owner: p ? p.key : null, ownerName: p ? "" : String(t.ownerName || ""), due: /^\d{4}-\d{2}-\d{2}$/.test(t.due || "") ? t.due : "", quote: String(t.quote || "") };
+    });
+    return { md: md.trim(), todos, open: (d.openQuestions || []).map((x) => "- " + x).join("\n"), uncertain: toQs(d.uncertain), target: "new", written: null };
+  }
+  const toQs = (arr) => (Array.isArray(arr) ? arr : []).map((x) => ({ q: String(typeof x === "string" ? x : x?.q || ""), a: "" })).filter((x) => x.q).slice(0, 8);
+  const mapTodos = (arr) => (arr || []).map((t) => {
+    const k = t.owner != null ? String(t.owner) : null;
+    const p = (k && person(k)) || (t.ownerName && matchPerson(t.ownerName)) || null;
+    return { keep: t.keep !== false, task: String(t.task || ""), owner: p ? p.key : null, ownerName: p ? "" : String(t.ownerName || ""), due: /^\d{4}-\d{2}-\d{2}$/.test(t.due || "") ? t.due : "", quote: String(t.quote || "") };
+  });
+  // 待確認：把記錄者的回答交給 Claude，修正會議紀錄
+  async function applyAnswers() {
+    const R = S.review; if (!R || !sample) return;
+    const answered = R.uncertain.filter((x) => x.a.trim());
+    if (!answered.length) return;
+    const btn = $("qsApply"); if (btn) { btn.disabled = true; btn.textContent = "更新中…"; }
+    const att = presentPeople().map((p) => `${p.key}=${p.short}`).join("、");
+    try {
+      const d = await sample.json(`以下是一份會議紀錄草稿，記錄者回答了幾個待確認問題。請依回答修正紀錄，其他內容保持不變，一律使用繁體中文。
+與會者（代號=名字）：${att}
+
+紀錄內容（markdown）：
+${R.md}
+
+待辦（JSON）：${JSON.stringify(R.todos.map((t) => ({ task: t.task, owner: t.owner, ownerName: t.ownerName, due: t.due || null, quote: t.quote, keep: t.keep })))}
+
+待確認問題（markdown 條列）：
+${R.open}
+
+記錄者的回答：
+${answered.map((x) => `問：${x.q}\n答：${x.a}`).join("\n")}
+
+只回覆 JSON：{"md":"修正後的紀錄 markdown","todos":[同上格式],"openQuestions":["…"]}`, { cache: false });
+      if (!d || typeof d.md !== "string") throw { code: "invalid_json" };
+      R.md = d.md.trim(); R.todos = mapTodos(d.todos); R.open = (d.openQuestions || []).map((x) => "- " + x).join("\n");
+      R.uncertain = R.uncertain.filter((x) => !x.a.trim());
+      save(); renderReview();
+    } catch (e) { if (btn) { btn.disabled = false; btn.textContent = "套用回答"; } const m = $("qsMsg"); if (m) m.textContent = sampleMsg(e); }
   }
 
   // ---------- review UI ----------
@@ -675,19 +1407,40 @@ ${tx}`;
     const main = $("reviewMain");
     if (!S.review) {
       main.innerHTML = S.lines.length
-        ? `<div class="gen"><h2>逐字稿已有 ${S.lines.length} 段</h2><div class="small muted">按下按鈕，小議會依你們的會議紀錄範本整理出進度匯報、宣達事項、決議、待辦與待確認問題。</div><button class="btn primary" id="genGo">整理會議紀錄</button></div>`
-        : `<div class="gen"><h2>還沒有逐字稿</h2><div class="small muted">回到「① 會議中」錄音、手動輸入或匯入逐字稿後，再回來整理。</div></div>`;
+        ? `<div class="gen"><h2>逐字稿已有 ${S.lines.length} 段</h2><div class="small muted">${S.meta.type === "例行會議" ? "小議會依週會格式整理出每人進度匯報、宣達事項" : "小議會依議題整理討論重點與各單位意見"}、決議、待辦與待確認問題。會議類型可在上方切換。</div><button class="btn primary" id="genGo">整理會議紀錄</button></div>`
+        : `<div class="gen"><h2>會議紀錄會出現在這裡</h2><div class="small muted">錄音或匯入逐字稿後，按下方的「結束，產生紀錄」，小議會依你們的範本整理好，待確認的地方會標出來給你回答。</div></div>`;
       const g = $("genGo"); if (g) g.onclick = generate;
       renderWrite(); return;
     }
     const R = S.review;
-    main.innerHTML = `
-      <div class="sec"><div class="row" style="justify-content:space-between"><h2>會議內容（可直接修改）</h2><button class="btn ghost" id="regen">重新整理</button></div>
+    R.uncertain = R.uncertain || [];
+    const qs = R.uncertain.length ? `<details class="confirmbar" open><summary>？ ${R.uncertain.length} 項待確認</summary><div class="qs">
+        ${R.uncertain.map((x, i) => `<label class="q"><span>${esc(x.q)}</span><input class="inp" data-qi="${i}" value="${esc(x.a)}" placeholder="輸入回答；不確定可留空"></label>`).join("")}
+        <div class="row"><button class="btn primary" type="button" id="qsApply">套用回答</button><button class="btn ghost" type="button" id="qsSkip">略過全部</button><span class="small muted" id="qsMsg"></span></div></div></details>` : "";
+    $("qBadge").textContent = R.uncertain.length ? `？${R.uncertain.length}` : "";
+    const bar = `<div class="sec" style="padding-bottom:0"><div class="row"><div class="viewsw" role="group" aria-label="檢視方式"><button type="button" data-view="text" aria-pressed="${notesView === "text"}">文字</button><button type="button" data-view="mind" aria-pressed="${notesView === "mind"}">心智圖</button></div><span class="grow"></span><button class="btn ghost" id="regen">重新產生</button></div></div>`;
+    if (notesView === "mind") {
+      main.innerHTML = qs + bar + `<div class="mm"><div class="mmzoom"><button class="iconbtn" type="button" id="mmOut" aria-label="縮小">−</button><span class="mono">${mmScale === 1 ? "符合寬度" : Math.round(mmScale * 100) + "%"}</span><button class="iconbtn" type="button" id="mmIn" aria-label="放大">＋</button></div><div class="mmwrap">${renderMind(R)}</div><div class="small muted" style="padding:8px 16px">要修改內容請切回「文字」。</div></div>`;
+      $("mmIn").onclick = () => { mmScale = Math.min(2, mmScale + 0.15); renderReview(); };
+      $("mmOut").onclick = () => { mmScale = Math.max(0.4, mmScale - 0.15); renderReview(); };
+      main.querySelectorAll("[data-view]").forEach((b) => { b.onclick = () => { notesView = b.dataset.view; try { localStorage.setItem("xiaoyi-notes-view", notesView); } catch (_) {} renderReview(); }; });
+      main.querySelectorAll("[data-qi]").forEach((inp) => { inp.oninput = () => { R.uncertain[Number(inp.dataset.qi)].a = inp.value; save(); }; });
+      if ($("qsApply")) $("qsApply").onclick = applyAnswers;
+      if ($("qsSkip")) $("qsSkip").onclick = () => { R.uncertain = []; save(); renderReview(); };
+      $("regen").onclick = () => { S.review = null; save(); generate(); };
+      renderWrite(); return;
+    }
+    main.innerHTML = qs + bar + `
+      <div class="sec"><div class="row" style="justify-content:space-between"><h2>會議內容</h2><span class="small muted">可直接修改</span></div>
         <textarea id="rvMd" aria-label="會議內容">${esc(R.md)}</textarea></div>
       <div class="sec"><div class="row" style="justify-content:space-between"><h2>待辦事項 → 子項目</h2><button class="btn ghost" id="addTodo">＋ 新增一筆</button></div>
         <div class="small muted">勾選的才會建立。缺負責人或期限的欄位會標黃，建議補上。</div>
         <div class="tblwrap"><table class="todos"><thead><tr><th style="width:36px">建立</th><th>事項</th><th style="width:120px">負責人</th><th style="width:150px">期限</th><th style="width:36px"></th></tr></thead><tbody id="todoBody"></tbody></table></div></div>
       <div class="sec"><h2>待確認問題</h2><textarea id="rvOpen" class="short" aria-label="待確認問題" placeholder="- 尚無">${esc(R.open)}</textarea></div>`;
+    main.querySelectorAll("[data-qi]").forEach((inp) => { inp.oninput = () => { R.uncertain[Number(inp.dataset.qi)].a = inp.value; save(); }; });
+    main.querySelectorAll("[data-view]").forEach((b) => { b.onclick = () => { notesView = b.dataset.view; try { localStorage.setItem("xiaoyi-notes-view", notesView); } catch (_) {} renderReview(); }; });
+    if ($("qsApply")) $("qsApply").onclick = applyAnswers;
+    if ($("qsSkip")) $("qsSkip").onclick = () => { R.uncertain = []; save(); renderReview(); };
     $("rvMd").oninput = (e) => { R.md = e.target.value; save(); };
     $("rvOpen").oninput = (e) => { R.open = e.target.value; save(); };
     $("regen").onclick = () => { S.review = null; save(); generate(); };
@@ -701,13 +1454,13 @@ ${tx}`;
       const tr = document.createElement("tr");
       tr.innerHTML = `<td><input type="checkbox" ${t.keep ? "checked" : ""} aria-label="建立此待辦"></td>
         <td><input type="text" value="${esc(t.task)}" aria-label="事項">${t.quote ? `<div class="quote">${esc(t.quote)}</div>` : ""}</td>
-        <td><select aria-label="負責人" class="${t.owner ? "" : "missing"}"><option value="">未指定</option>${TEAM.map((p) => `<option value="${p.id}" ${t.owner === p.id ? "selected" : ""}>${esc(p.short)}</option>`).join("")}</select></td>
+        <td><select aria-label="負責人" class="${t.owner ? "" : "missing"}"><option value="">${t.ownerName ? esc(t.ownerName) + "（未對應）" : "未指定"}</option>${S.people.filter((p) => S.present.includes(p.key) || p.key === t.owner).map((p) => `<option value="${esc(p.key)}" ${t.owner === p.key ? "selected" : ""}>${esc(label(p))}${p.id ? "" : "（外部）"}</option>`).join("")}</select></td>
         <td><input type="date" value="${esc(t.due)}" aria-label="期限" class="${t.due ? "" : "missing"}"></td>
         <td><button class="btn ghost" type="button" aria-label="刪除">✕</button></td>`;
       const [cb, task, owner, due, del] = [tr.querySelector("input[type=checkbox]"), tr.querySelector("input[type=text]"), tr.querySelector("select"), tr.querySelector("input[type=date]"), tr.querySelector("button")];
       cb.onchange = () => { t.keep = cb.checked; save(); renderWrite(); };
       task.oninput = () => { t.task = task.value; save(); };
-      owner.onchange = () => { t.owner = owner.value ? Number(owner.value) : null; owner.classList.toggle("missing", !t.owner); save(); };
+      owner.onchange = () => { t.owner = owner.value || null; owner.classList.toggle("missing", !t.owner); save(); };
       due.onchange = () => { t.due = due.value; due.classList.toggle("missing", !t.due); save(); };
       del.onclick = () => { R.todos.splice(i, 1); save(); renderTodos(); renderWrite(); };
       tb.append(tr);
@@ -727,7 +1480,15 @@ ${tx}`;
   }
   function renderWrite() {
     const box = $("writeBody");
-    if (!S.review) { box.innerHTML = `<div class="small muted">整理完會議紀錄後，可在這裡確認並寫入 monday。</div>`; return; }
+    $("writeOpen").textContent = S.review?.written ? "已寫入 monday ✓" : "寫入 monday";
+    if (!S.review) {
+      $("qBadge").textContent = "";
+      box.innerHTML = S.lines.length
+        ? `<div class="notice">要先產生會議紀錄，確認內容後才能寫入 monday。</div><button class="btn primary" type="button" id="wGen">產生會議紀錄</button>`
+        : `<div class="notice">這場會議還沒有逐字稿。請先錄音或匯入逐字稿，產生會議紀錄後再寫入 monday。</div>`;
+      const g = $("wGen"); if (g) g.onclick = () => { $("writeDrawer").hidden = true; show("review"); generate(); };
+      return;
+    }
     const R = S.review;
     if (!recent && R.target !== "new" && !R.written) R.target = "new";
     if (R.written) {
@@ -746,7 +1507,7 @@ ${tx}`;
       ${recent ? "" : `<div class="row"><button class="btn" id="loadRecent">讀取板上最近的會議</button><span class="small muted">今天的項目已先建好時用</span></div>`}
       ${recentErr ? `<div class="notice err">${esc(recentErr)}</div>` : ""}
       <ul class="small muted" style="margin:0;padding-left:18px">
-        <li>${tgt ? (tgt.docObj ? "在既有紀錄文件末尾加上小議整理的內容" : "在項目的「會議紀錄」欄建立文件") : "在「" + esc(S.meta.type) + "」群組建立新項目，檢核狀態設為「待檢核」，並建立紀錄文件"}</li>
+        <li>${tgt ? "" : "在「" + esc(S.meta.type) + "」群組建立新項目，檢核狀態設為「待檢核」；"}紀錄填入範本的「會議內容」「待辦事項」格子，與會者以 @ 標記（項目沒有範本文件時才另建文件）</li>
         <li>建立 ${keep.length} 個子項目待辦（負責人、時間軸、狀態「處理中」、來源原話）</li>
         <li>把完整逐字稿貼到項目的更新區</li>
       </ul>
@@ -765,18 +1526,112 @@ ${tx}`;
   }
   const cell = (s) => String(s || "").replace(/\|/g, "／").replace(/\n/g, " ");
   function docMarkdown(R) {
-    const names = TEAM.filter((p) => S.present.includes(p.id)).map((p) => p.short).join("、");
+    const names = presentPeople().map((p) => p.short + (p.unit && p.unit !== "研發文管課" ? "（" + p.unit + "）" : "")).join("、");
     const keep = R.todos.filter((t) => t.keep && t.task.trim());
     let md = `## 🤖 小議會議紀錄（AI 草稿・待檢核）\n\n| 項目 | 內容 |\n| --- | --- |\n| 🎯 會議主題 | ${cell(S.meta.name)} |\n| 🚩 地點 | ${cell(S.meta.loc)} |\n| ✏️ 記錄者 | 小議（AI 整理） |\n| 👥 與會者 | ${cell(names)} |\n\n`;
     md += R.md.trim() + "\n\n";
     if (keep.length) {
       md += `### 📝 待辦事項\n\n| 事項 | 負責人 | 期限 |\n| --- | --- | --- |\n`;
-      keep.forEach((t) => { md += `| ${cell(t.task)} | ${cell(t.owner ? shortOf(t.owner) : "未指定")} | ${cell(t.due || "未定")} |\n`; });
+      keep.forEach((t) => { md += `| ${cell(t.task)} | ${cell(t.owner ? shortOf(t.owner) : (t.ownerName || "未指定"))} | ${cell(t.due || "未定")} |\n`; });
       md += "\n";
     }
     if (R.open.trim()) md += `### ❓ 待確認問題\n\n${R.open.trim()}\n`;
     return md;
   }
+  // ---------- 範本填寫：把內容寫進「會議內容」「待辦事項」格子，與會者用 @ 標記 ----------
+  const NL = { insert: { text: "\n" } };
+  function inlineDelta(t) {
+    const out = [];
+    String(t).split(/(\*\*[^*]+\*\*)/).forEach((seg) => {
+      if (!seg) return;
+      const b = seg.match(/^\*\*([^*]+)\*\*$/);
+      out.push(b ? { insert: { text: b[1] }, attributes: { bold: true } } : { insert: { text: seg } });
+    });
+    return out;
+  }
+  function mdToBlocks(md) {
+    const blocks = [];
+    String(md || "").split(/\r?\n/).forEach((raw) => {
+      const line = raw.replace(/\s+$/, ""); if (!line.trim()) return;
+      let m;
+      if ((m = line.match(/^#{1,6}\s+(.*)$/))) blocks.push({ block_type: "text", text_block_type: "SMALL_TITLE", delta_format: [...inlineDelta(m[1].replace(/\*\*/g, "")), NL] });
+      else if ((m = line.match(/^(\s*)[-*•]\s+(.*)$/))) blocks.push({ block_type: "list_item", list_block_type: "BULLETED_LIST", indentation: m[1].length >= 2 ? 1 : 0, delta_format: [...inlineDelta(m[2]), NL] });
+      else if ((m = line.match(/^(\s*)\d+[.)]\s+(.*)$/))) blocks.push({ block_type: "list_item", list_block_type: "NUMBERED_LIST", indentation: m[1].length >= 2 ? 1 : 0, delta_format: [...inlineDelta(m[2]), NL] });
+      else blocks.push({ block_type: "text", text_block_type: "NORMAL_TEXT", delta_format: [...inlineDelta(line.trim()), NL] });
+    });
+    return blocks.filter((b) => b.delta_format.length > 1);
+  }
+  function todoBlock(t) {
+    const d = [{ insert: { text: t.task.trim() } }, { insert: { text: "｜負責人：" } }];
+    const p = t.owner ? person(t.owner) : null;
+    d.push(p?.id ? { insert: { mention: { id: p.id, type: "USER" } } } : { insert: { text: p ? p.short : (t.ownerName || "未指定") } });
+    d.push({ insert: { text: "｜期限：" + (t.due || "未定") } }, NL);
+    return { block_type: "list_item", list_block_type: "BULLETED_LIST", delta_format: d };
+  }
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  async function readTemplate(docObj) {
+    const blocks = [];
+    for (let page = 1; page <= 10; page++) {
+      const p = await callMonday("read_docs", { type: "object_ids", ids: [String(docObj)], include_blocks: true, blocks_limit: 100, blocks_page: page });
+      const d = p?.data?.[0]; if (!d) break;
+      blocks.push(...(d.blocks || []));
+      if (!d.blocks_pagination?.has_more_pages) break;
+    }
+    const parse = (b) => { try { return JSON.parse(b.content || "{}"); } catch (_) { return {}; } };
+    const kids = {}; blocks.forEach((b) => { if (b.parent_block_id) (kids[b.parent_block_id] ||= []).push(b); });
+    Object.values(kids).forEach((arr) => arr.sort((a, b) => a.position - b.position));
+    const textOf = (b) => (parse(b).deltaFormat || []).map((x) => typeof x.insert === "string" ? x.insert : (x.insert?.mention ? "@" : "")).join("").trim();
+    const cellText = (id) => (kids[id] || []).map(textOf).join(" ");
+    const T = { kids, textOf, isEmpty: (id) => (kids[id] || []).every((b) => !textOf(b)), recorderCell: null, attendCell: null, contentCell: null, todoCell: null };
+    blocks.filter((b) => b.type === "table" && !b.parent_block_id).forEach((tb) => {
+      const rows = parse(tb).cells || [];
+      rows.forEach((row, ri) => {
+        const ids = row.map((c) => c.blockId);
+        const head = cellText(ids[0]);
+        if (ids.length >= 2 && head.includes("記錄者")) T.recorderCell = ids[1];
+        if (ids.length >= 2 && head.includes("與會者")) T.attendCell = ids[1];
+        if (ids.length === 1 && head.includes("會議內容") && rows[ri + 1]) T.contentCell = rows[ri + 1][0].blockId;
+        if (ids.length === 1 && head.includes("待辦事項") && rows[ri + 1]) T.todoCell = rows[ri + 1][0].blockId;
+      });
+    });
+    return T;
+  }
+  async function fillTemplate(docObj, R, progress, tries = 1) {
+    let T = null;
+    for (let i = 0; i < tries; i++) {
+      if (i) { progress?.("等待 monday 套用範本…"); await sleep(2500); }
+      T = await readTemplate(docObj);
+      // 範本剛套用時格子可能還在產生：要同時找到「會議內容」格且格內已有佔位行
+      if (T.contentCell && (T.kids[T.contentCell] || []).length) break;
+    }
+    if (!T?.contentCell) return false;
+    const { kids, textOf, isEmpty, recorderCell, attendCell, contentCell, todoCell } = T;
+    const ops = [];
+    const firstText = (cell) => (kids[cell] || []).find((b) => /text/.test(b.type));
+    if (recorderCell && isEmpty(recorderCell) && firstText(recorderCell)) ops.push({ operation_type: "update_block", block_id: firstText(recorderCell).id, content: { block_content_type: "text", delta_format: [{ insert: { text: "小議（AI 整理・待檢核）" } }, NL] } });
+    if (attendCell && isEmpty(attendCell) && firstText(attendCell)) {
+      const d = []; presentPeople().forEach((p) => { d.push(p.id ? { insert: { mention: { id: p.id, type: "USER" } } } : { insert: { text: p.short + (p.unit ? "（" + p.unit + "）" : "（外部）") } }, { insert: { text: " " } }); });
+      if (d.length) ops.push({ operation_type: "update_block", block_id: firstText(attendCell).id, content: { block_content_type: "text", delta_format: [...d, NL] } });
+    }
+    let body = R.md.trim();
+    if (R.open.trim()) body += "\n### ❓ 待確認問題\n" + R.open.trim();
+    const keep = R.todos.filter((t) => t.keep && t.task.trim());
+    mdToBlocks(body).forEach((b) => ops.push({ operation_type: "create_block", parent_block_id: contentCell, block: b }));
+    if (keep.length) {
+      const target = todoCell || contentCell;
+      if (!todoCell) ops.push({ operation_type: "create_block", parent_block_id: contentCell, block: { block_type: "text", text_block_type: "SMALL_TITLE", delta_format: [{ insert: { text: "✅ 待辦事項" } }, NL] } });
+      keep.forEach((t) => ops.push({ operation_type: "create_block", parent_block_id: target, block: todoBlock(t) }));
+    }
+    // 原本空白的佔位行，內容寫入後再刪除
+    const blanks = [contentCell, todoCell].filter(Boolean).flatMap((c) => (kids[c] || []).filter((b) => !textOf(b)).map((b) => b.id));
+    for (let i = 0; i < ops.length; i += 20) {
+      progress?.(`寫入中 ${Math.min(i + 20, ops.length)}/${ops.length}`);
+      await callMonday("update_doc", { object_id: String(docObj), operations: ops.slice(i, i + 20) });
+    }
+    if (blanks.length) { try { await callMonday("update_doc", { object_id: String(docObj), operations: [{ operation_type: "delete_blocks", block_ids: blanks.slice(0, 100) }] }); } catch (_) {} }
+    return true;
+  }
+
   function findId(p) {
     if (!p) return null;
     const cands = [p.item_id, p.itemId, p.id, p.item?.id, p.data?.id, p.data?.item?.id, p.create_item?.id];
@@ -803,14 +1658,27 @@ ${tx}`;
         if (!itemId) { s.st = "err"; s.msg = "項目可能已建立，但讀不到它的 ID。請到 monday 確認後，改選「寫入既有」再寫一次。"; list(); throw null; }
         s.st = "ok"; s.msg = "#" + itemId; list();
       }
-      // 2. doc
+      // 2. doc：有範本就填進範本格子；沒有範本才另建文件
       {
-        const s = step(tgt?.docObj ? "附加到既有紀錄文件" : "建立會議紀錄文件");
-        const md = docMarkdown(R);
+        const s = step("寫入會議紀錄文件");
         try {
-          if (tgt?.docObj) await callMonday("update_doc", { object_id: String(tgt.docObj), operations: [{ operation_type: "add_markdown_content", markdown: md }] });
-          else await callMonday("create_doc", { location: "item", item_id: itemId, column_id: COL.doc, doc_name: "會議紀錄", markdown: md });
-          s.st = "ok";
+          // 新項目的範本文件是 monday 在建立後幾秒才套用的：先等文件與範本表格出現，再寫入
+          const fresh = !tgt;
+          let docObj = tgt?.docObj || null;
+          for (let i = 0; !docObj && i < (fresh ? 10 : 1); i++) {
+            if (i) { s.msg = "等待 monday 套用範本…"; list(); await sleep(2500); }
+            const p = await callMonday("get_board_items_page", { boardId: BOARD, itemIds: [itemId], includeColumns: true, columnIds: [COL.doc] });
+            docObj = p?.items?.[0]?.column_values?.[COL.doc]?.files?.[0]?.objectId || null;
+          }
+          if (docObj) {
+            const filled = await fillTemplate(docObj, R, (t) => { s.msg = t; list(); }, fresh ? 10 : 2);
+            if (!filled) await callMonday("update_doc", { object_id: String(docObj), operations: [{ operation_type: "add_markdown_content", markdown: docMarkdown(R) }] });
+            s.label = filled ? "已填入範本「會議內容」與「待辦事項」" : "文件沒有範本格式，已附加在文件末尾";
+          } else {
+            await callMonday("create_doc", { location: "item", item_id: itemId, column_id: COL.doc, doc_name: "會議紀錄", markdown: docMarkdown(R) });
+            s.label = "項目沒有範本文件，已另建紀錄文件";
+          }
+          s.st = "ok"; s.msg = "";
         } catch (e) { s.st = "err"; s.msg = mcpMsg(e); }
         list();
       }
@@ -819,9 +1687,11 @@ ${tx}`;
       for (const t of keep) {
         const s = step("子項目：" + t.task.slice(0, 30));
         const cv = { [SUBCOL.status]: { label: "處理中" } };
-        if (t.owner) cv[SUBCOL.person] = { personsAndTeams: [{ id: t.owner, kind: "person" }] };
+        const op = t.owner ? person(t.owner) : null;
+        if (op?.id) cv[SUBCOL.person] = { personsAndTeams: [{ id: op.id, kind: "person" }] };
         if (t.due) cv[SUBCOL.timeline] = { from: S.meta.date <= t.due ? S.meta.date : t.due, to: t.due };
-        if (t.quote) cv[SUBCOL.quote] = { text: t.quote };
+        const who = op && !op.id ? `負責人：${op.short}（外部）` : (!op && t.ownerName ? `負責人：${t.ownerName}` : "");
+        if (t.quote || who) cv[SUBCOL.quote] = { text: [who, t.quote].filter(Boolean).join("\n") };
         try { await callMonday("create_item", { boardId: SUB_BOARD, parentItemId: itemId, name: t.task.slice(0, 250), columnValues: JSON.stringify(cv) }); s.st = "ok"; }
         catch (e) { s.st = "err"; s.msg = mcpMsg(e); }
         list();
@@ -829,7 +1699,7 @@ ${tx}`;
       // 4. transcript update
       {
         const s = step("逐字稿貼到更新區");
-        const body = S.lines.map((l) => `<p><b>[${esc(l.t)}] ${esc(shortOf(l.who))}</b>：${esc(l.text)}</p>`).join("");
+        const body = S.lines.map((l) => `<p><b>[${esc(l.t)}] ${esc(nameOf(l))}</b>：${esc(l.text)}</p>`).join("");
         const capped = body.length > 60000 ? body.slice(0, 60000) + "<p>…（逐字稿過長，已截斷）</p>" : body;
         try { await callMonday("create_update", { itemId, body: `<h3>🎙 ${esc(S.meta.name)} 逐字稿（小議）</h3>${capped || "<p>（無）</p>"}` }); s.st = "ok"; }
         catch (e) { s.st = "err"; s.msg = mcpMsg(e); }
@@ -846,15 +1716,136 @@ ${tx}`;
       else { const keepSteps = steps.slice(); confirmOpen = false; renderWrite(); const el = $("stepList"); if (el) el.innerHTML = keepSteps.map(stepLi).join("") + `<li><span></span><span class="small muted">寫入未完成。請先到 monday 確認已建立的內容，避免重複，再決定是否重試。</span></li>`; }
     }
   }
-  function resetAll() {
-    S.lines = []; S.review = null; S.elapsed = 0; S.meta.date = today(); S.meta.name = defaultName(S.meta.date);
-    recent = null; save(); renderMeta(); renderSpeakers(); renderTranscript(); $("timer").textContent = fmtElapsed(0); show("live");
+  // ---------- 會議清單：多場會議各自保存，可切換、新增、清空、刪除 ----------
+  function stopActivity() {
+    if (dict?.active()) dict.stop().catch(() => {});
+    if (wsrOn) wsrStop();
+    stopFollow(); partialText = ""; forceNewLine = true;
   }
+  function loadDraft(id) {
+    clearTimeout(saveT); persist(); stopActivity();
+    curId = id; Object.assign(S, blankDraft(), drafts[id]); normalize();
+    recent = null; confirmOpen = false; recentErr = "";
+    persist(); renderAll();
+  }
+  function renderAll() {
+    renderDrafts(); renderMeta(); renderSpeakers(); renderTranscript();
+    $("timer").textContent = fmtElapsed(S.elapsed); setRecUI("idle");
+    $("prevBody").innerHTML = `<div class="small muted">選擇要追蹤的會議，列出還沒完成的子項目待辦。</div>`; prevItems = null; renderPrevPicker();
+    show(S.review ? "review" : "live");
+  }
+  function draftStatus(d) {
+    if (d.review?.written) return "已寫入 monday";
+    if (d.review) return "已整理・待寫入";
+    return d.lines?.length ? `逐字稿 ${d.lines.length} 段` : "空白";
+  }
+  // 側欄：依會議類型分資料夾列出所有會議，可搜尋名稱與逐字稿內容
+  const FOLDER_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>`;
+  // 會議可拖曳到資料夾；資料夾可新增、改名、刪除（刪除後會議回到「其他會議」）
+  let editingFolder = null, folderForDraft = false;
+  const draftById = (id) => (id === curId ? draftOf() : drafts[id]);
+  function moveDraft(id, folderId) {
+    if (id === curId) S.folder = folderId; else if (drafts[id]) drafts[id].folder = folderId;
+    persist(); renderDrafts(); renderHead();
+  }
+  function startNewFolder(forCurrent) { editingFolder = "__new"; folderForDraft = !!forCurrent; renderDrafts(); }
+  function commitFolder(name) {
+    if (!editingFolder) return; // Enter 與失去焦點可能各觸發一次
+    name = String(name || "").trim();
+    if (editingFolder === "__new") {
+      if (name) { const f = { id: "f" + Date.now().toString(36), name }; folders.push(f); if (folderForDraft) S.folder = f.id; }
+    } else { const f = folders.find((x) => x.id === editingFolder); if (f && name) f.name = name; }
+    editingFolder = null; folderForDraft = false; saveFolders(); persist(); renderDrafts(); renderHead();
+  }
+  function renderDrafts() {
+    const nav = $("meetList"); if (!nav) return;
+    const q = ($("meetSearch")?.value || "").trim().toLowerCase();
+    const all = Object.keys(drafts).map((id) => [id, draftById(id)])
+      .filter(([, d]) => !q || (d.meta?.name || "").toLowerCase().includes(q) || (d.lines || []).some((l) => String(l.text).toLowerCase().includes(q)) || (d.review?.md || "").toLowerCase().includes(q))
+      .sort((a, b) => (b[1].meta?.date || "").localeCompare(a[1].meta?.date || "") || (b[1].updated || 0) - (a[1].updated || 0));
+    nav.textContent = "";
+    const dropTarget = (el, folderId) => {
+      el.addEventListener("dragover", (e) => { e.preventDefault(); el.classList.add("drop"); });
+      el.addEventListener("dragleave", () => el.classList.remove("drop"));
+      el.addEventListener("drop", (e) => { e.preventDefault(); el.classList.remove("drop"); const id = e.dataTransfer.getData("text/plain"); if (drafts[id]) moveDraft(id, folderId); });
+    };
+    const item = ([id, d]) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "it"; b.draggable = true;
+      b.setAttribute("aria-current", String(id === curId));
+      b.title = "拖曳到資料夾即可移動";
+      b.innerHTML = `<span class="nm">${esc(d.meta?.name || "（未命名）")}</span><span class="st">${esc((d.meta?.date || "").slice(5).replace("-", "/"))}・${esc(d.meta?.type || "")}・${esc(draftStatus(d))}</span>`;
+      b.onclick = () => { if (id !== curId) loadDraft(id); };
+      b.addEventListener("dragstart", (e) => { e.dataTransfer.setData("text/plain", id); e.dataTransfer.effectAllowed = "move"; });
+      return b;
+    };
+    const sec = document.createElement("div"); sec.className = "sechd";
+    sec.innerHTML = `<span>資料夾</span><button type="button" title="新增資料夾" aria-label="新增資料夾">＋</button>`;
+    sec.querySelector("button").onclick = () => startNewFolder(false);
+    nav.append(sec);
+    const folderInput = (val) => {
+      const g = document.createElement("div"); g.className = "grp";
+      g.innerHTML = FOLDER_SVG + `<input class="inp" value="${esc(val)}" placeholder="資料夾名稱，Enter 確定">`;
+      const inp = g.querySelector("input");
+      inp.onkeydown = (e) => { if (e.key === "Enter") commitFolder(inp.value); if (e.key === "Escape") { editingFolder = null; renderDrafts(); } };
+      inp.onblur = () => commitFolder(inp.value);
+      setTimeout(() => { inp.focus(); inp.select(); }, 0);
+      return g;
+    };
+    folders.forEach((f) => {
+      if (editingFolder === f.id) { nav.append(folderInput(f.name)); return; }
+      const items = all.filter(([, d]) => d.folder === f.id);
+      if (q && !items.length) return;
+      const g = document.createElement("div"); g.className = "grp";
+      g.innerHTML = FOLDER_SVG + `<span class="gname">${esc(f.name)}</span><button type="button" class="gact" data-a="rename" title="重新命名">✎</button><button type="button" class="gact" data-a="del" title="刪除資料夾">✕</button>`;
+      g.querySelector('[data-a="rename"]').onclick = () => { editingFolder = f.id; renderDrafts(); };
+      const del = g.querySelector('[data-a="del"]');
+      del.onclick = () => {
+        if (del.dataset.armed) { folders = folders.filter((x) => x.id !== f.id); Object.keys(drafts).forEach((id) => { if (draftById(id).folder === f.id) moveDraft(id, null); }); saveFolders(); renderDrafts(); renderHead(); return; }
+        del.dataset.armed = "1"; del.textContent = "確定刪除？"; del.style.visibility = "visible"; setTimeout(() => { if (del.isConnected) { delete del.dataset.armed; del.textContent = "✕"; del.style.visibility = ""; } }, 3000);
+      };
+      dropTarget(g, f.id); nav.append(g);
+      items.forEach((x) => nav.append(item(x)));
+      if (!items.length) { const n = document.createElement("div"); n.className = "none"; n.textContent = "把會議拖到這裡"; dropTarget(n, f.id); nav.append(n); }
+    });
+    if (editingFolder === "__new") nav.append(folderInput(""));
+    const others = all.filter(([, d]) => !d.folder || !folders.some((f) => f.id === d.folder));
+    const og = document.createElement("div"); og.className = "sechd"; og.innerHTML = `<span>其他會議</span>`; dropTarget(og, null); nav.append(og);
+    others.forEach((x) => nav.append(item(x)));
+    if (!others.length) { const n = document.createElement("div"); n.className = "none"; n.style.paddingLeft = "8px"; n.textContent = q ? `找不到「${q}」` : "沒有未分類的會議"; nav.append(n); }
+    $("draftCount").textContent = `共 ${Object.keys(drafts).length} 場`;
+  }
+  $("meetSearch").oninput = renderDrafts;
+  // 新會議放在「其他會議」，名稱先用「新會議 月/日」，標題直接可改
+  $("draftNew").onclick = () => {
+    clearTimeout(saveT); persist();
+    const id = newId(), d = blankDraft();
+    d.meta.name = `新會議 ${d.meta.date.slice(5).replace("-", "/")}`;
+    drafts[id] = d; loadDraft(id);
+    setTimeout(() => { $("mName").focus(); $("mName").select(); }, 0);
+  };
+  // 清空、刪除都要按兩次確認，避免誤按
+  function twoStep(btn, normal, confirmText, action) {
+    let armed = false, t = 0;
+    btn.onclick = () => {
+      if (!armed) { armed = true; btn.textContent = confirmText; btn.classList.add("danger"); t = setTimeout(() => { armed = false; btn.textContent = normal; btn.classList.remove("danger"); }, 4000); return; }
+      clearTimeout(t); armed = false; btn.textContent = normal; btn.classList.remove("danger"); action();
+    };
+  }
+  twoStep($("draftClear"), "清空逐字稿", "再按一次確認清空", () => { stopActivity(); S.lines = []; S.review = null; S.elapsed = 0; persist(); renderAll(); });
+  twoStep($("draftDel"), "刪除這場", "再按一次確認刪除", () => {
+    stopActivity(); delete drafts[curId];
+    const left = Object.keys(drafts);
+    if (!left.length) { const id = newId(); drafts[id] = blankDraft(); curId = id; } else curId = left.sort((a, b) => (drafts[b].updated || 0) - (drafts[a].updated || 0))[0];
+    Object.assign(S, blankDraft(), drafts[curId]); normalize(); recent = null; persist(); renderAll();
+  });
+  function resetAll() { $("draftNew").click(); }
 
   // ---------- boot ----------
-  renderMeta(); renderSpeakers(); renderTranscript();
+  S.lines.forEach((l) => { l.text = toTW(l.text); });
+  persist(); renderDrafts();
+  renderMeta(); renderSpeakers(); renderTranscript(); renderPrevPicker();
   $("timer").textContent = fmtElapsed(S.elapsed);
-  if (S.review) show("review");
+  renderReview(); selectTab(S.review ? "notes" : "transcript");
 })();
 </script>
 
